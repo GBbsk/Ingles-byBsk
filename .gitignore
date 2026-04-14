@@ -13,7 +13,7 @@ dist/
 build/
 
 # Arquivos de ambiente
-.env/
+.env
 
 # Cache do npm
 .npm
@@ -25,7 +25,7 @@ build/
 .vercel
 
 # Arquivos de lock
-package-lock.json/
+# package-lock.json (we want this to be tracked!)
 yarn.lock
 
 # Arquivos do sistema operacional
