@@ -2,7 +2,7 @@
  * Resource Controller — Lógica de negócio para arquivos e áudios.
  */
 
-import { readData, writeData, generateId } from '../shared/dataStore.js';
+import { readData, writeData, generateId } from './shared/dataStore.js';
 
 // ---------- Helpers privados ----------
 

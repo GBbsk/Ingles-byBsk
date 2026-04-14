@@ -2,7 +2,7 @@
  * Module Controller — Lógica de negócio para módulos.
  */
 
-import { readData, writeData, findModule, generateId } from '../shared/dataStore.js';
+import { readData, writeData, findModule, generateId } from './shared/dataStore.js';
 
 /** GET /api/modules */
 export function getAll(req, res) {

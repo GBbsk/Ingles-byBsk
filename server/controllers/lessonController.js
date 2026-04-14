@@ -2,7 +2,7 @@
  * Lesson Controller — Lógica de negócio para aulas.
  */
 
-import { findModule, writeData, generateId, readData } from '../shared/dataStore.js';
+import { findModule, writeData, generateId, readData } from './shared/dataStore.js';
 
 /** POST /api/modules/:moduleId/lessons */
 export function create(req, res) {

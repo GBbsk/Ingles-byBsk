@@ -3,8 +3,8 @@
  */
 
 import { Router } from 'express';
-import { authenticate } from '../shared/auth.js';
-import * as lessonController from '../controllers/lessonController.js';
+import { authenticate } from './shared/auth.js';
+import * as lessonController from './controllers/lessonController.js';
 
 const router = Router();
 

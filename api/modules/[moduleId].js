@@ -2,8 +2,10 @@
  * Vercel Serverless Function — GET /api/modules/:moduleId
  */
 
-import { readData } from '../../server/shared/dataStore.js';
-import { corsMiddleware, runMiddleware } from '../../server/shared/cors.js';
+import { readData } from '.server/shared/dataStore.js';
+import { corsMiddleware, runMiddleware } from './server/shared/cors.js';
+// C:\Users\gabri\Downloads\plat-curso\Ingles-GBbsk\server
+// C:\Users\gabri\Downloads\plat-curso\Ingles-GBbsk\server\shared\cors.js
 
 export default async function handler(req, res) {
   await runMiddleware(req, res, corsMiddleware);
