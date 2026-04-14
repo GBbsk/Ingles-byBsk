@@ -1,11 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
-  :root {
-    /* Variáveis CSS podem ser definidas aqui se necessário, mas com ThemeProvider,
-       o acesso direto via props.theme é mais comum em styled-components.
-       No entanto, para elementos não-React ou estilos muito genéricos, pode ser útil. */
-  }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
   *,
   *::before,
@@ -15,15 +11,20 @@ export const GlobalStyle = createGlobalStyle`
     padding: 0;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     background-color: ${({ theme }) => theme.body};
     color: ${({ theme }) => theme.text};
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-                 Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
-    transition: background-color 0.3s ease, color 0.3s ease; // Transição suave
+    transition: background-color 0.4s ease, color 0.4s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 
   a {
@@ -34,14 +35,19 @@ export const GlobalStyle = createGlobalStyle`
 
   a:hover {
     color: ${({ theme }) => theme.primaryDark};
-    text-decoration: underline;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    color: ${({ theme }) => theme.text}; // Ou uma cor específica para títulos se definida no tema
+    color: ${({ theme }) => theme.text};
     margin-bottom: 0.75rem;
-    font-weight: 600; // Exemplo
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
   }
+
+  h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em; }
+  h2 { font-size: 1.75rem; font-weight: 600; }
+  h3 { font-size: 1.375rem; }
 
   p {
     margin-bottom: 1rem;
@@ -52,5 +58,41 @@ export const GlobalStyle = createGlobalStyle`
     font-family: inherit;
   }
 
-  /* Adicione mais estilos globais ou resets conforme necessário */
+  /* ---- Selection ---- */
+  ::selection {
+    background: ${({ theme }) => theme.primary};
+    color: white;
+  }
+
+  /* ---- Custom Scrollbar ---- */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.body};
+  }
+  ::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.borderColor};
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: ${({ theme }) => theme.primary};
+    background-clip: content-box;
+  }
+
+  /* ---- Focus Ring ---- */
+  :focus-visible {
+    outline: 2px solid ${({ theme }) => theme.primary};
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* ---- Smooth image rendering ---- */
+  img, video, iframe {
+    max-width: 100%;
+    border-radius: 8px;
+  }
 `;

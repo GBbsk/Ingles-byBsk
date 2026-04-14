@@ -1,19 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { FaCheckCircle, FaPlayCircle, FaChevronLeft, FaChevronRight } from 'react-icons/fa'; // Adicionar ícones de seta
-import Button from '../components/Button';
-import FileList from '../components/FileList';
-import AudioPlayer from '../components/AudioPlayer';
+import styled, { keyframes } from 'styled-components';
+import { FaCheckCircle, FaPlayCircle, FaChevronLeft, FaChevronRight, FaCheck } from 'react-icons/fa';
+import Button from '../components/ui/Button';
+import FileList from '../components/ui/FileList';
+import AudioPlayer from '../components/layout/AudioPlayer';
+import { useUserProgress } from '../hooks/useUserProgress';
 
-// --- Componentes Estilizados Base (Definidos Primeiro) ---
+// --- Animations ---
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const checkmarkPop = keyframes`
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+`;
+
+// --- Styled Components ---
 const PageWrapper = styled.div`
   padding: 1.5rem;
   max-width: 1280px;
   margin: 0 auto;
+  animation: ${fadeInUp} 0.5s ease-out;
 
   @media (max-width: 768px) {
-    padding: 0.75rem; // Reduzindo um pouco o padding geral da página no mobile
+    padding: 0.75rem;
   }
 `;
 
@@ -21,52 +35,52 @@ const ResponsiveVideoWrapper = styled.div`
   position: relative;
   width: 100%;
   padding-top: 56.25%; /* 16:9 Aspect Ratio */
-  margin-bottom: 1.5rem; // Aumentar margem inferior
+  margin-bottom: 1.5rem;
 
   iframe, video {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
     border-radius: 10px;
-    border: none; // Geralmente não se aplica tema a bordas de iframe de vídeo
+    border: none;
   }
 
   @media (max-width: 768px) {
-    margin-bottom: 0.75rem; // Reduzido para mobile
+    margin-bottom: 0.75rem;
   }
 `;
 
 const TabsWrapper = styled.div`
-  margin-top: 1.5rem; // Adicionar margem superior
+  margin-top: 1.5rem;
   margin-bottom: 1rem;
   display: flex;
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor}; // Usando tema
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   gap: 1.5rem;
   font-size: 1rem;
 
-  @media (max-width: 768px) { // Ajuste para 768px para consistência
+  @media (max-width: 768px) {
     gap: 1rem;
     font-size: 0.9rem;
-    overflow-x: auto; // Permitir rolagem horizontal em telas pequenas
-    padding-bottom: 2px; // Evitar que a borda inferior corte o indicador da aba
-    margin-top: 0.5rem; // Reduzido para mobile
+    overflow-x: auto;
+    padding-bottom: 2px;
+    margin-top: 0.5rem;
   }
 `;
 
 const Tab = styled.button`
   background: none;
   border: none;
-  color: ${({ theme, $active }) => $active ? theme.tabActiveText : theme.tabInactiveText}; // Usando tema
+  color: ${({ theme, $active }) => $active ? theme.tabActiveText : theme.tabInactiveText};
   font-weight: ${({ $active }) => $active ? '600' : '500'};
   padding: 0.75rem 0.25rem; 
   margin-bottom: -1px; 
-  border-bottom: 3px solid ${({ theme, $active }) => $active ? theme.tabBorder : 'transparent'}; // Usando tema
+  border-bottom: 3px solid ${({ theme, $active }) => $active ? theme.tabBorder : 'transparent'};
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
   white-space: nowrap; 
 
   &:hover {
-    color: ${({ theme }) => theme.primaryDark}; // Usando tema
+    color: ${({ theme }) => theme.primaryDark};
   }
 
   @media (max-width: 600px) {
@@ -80,7 +94,7 @@ const LoadingContainer = styled.div`
   align-items: center;
   min-height: 300px;
   font-size: 1.1rem;
-  color: ${({ theme }) => theme.secondaryText}; // Usando tema
+  color: ${({ theme }) => theme.secondaryText};
 `;
 
 const AudioListWrapper = styled.div`
@@ -91,14 +105,14 @@ const AudioListWrapper = styled.div`
 `;
 
 const AudioCard = styled.div`
-  background: ${({ theme }) => theme.audioCard?.backgroundGradient || 'linear-gradient(120deg, #e0e7ff 0%, #f0fdfa 100%)'}; // Usando tema
+  background: ${({ theme }) => theme.audioCard?.backgroundGradient || 'linear-gradient(120deg, #e0e7ff 0%, #f0fdfa 100%)'};
   border-radius: 14px;
   padding: 1.1rem 1.3rem;
-  box-shadow: ${({ theme }) => theme.audioCard?.boxShadow || '0 4px 16px rgba(80, 112, 255, 0.08)'}; // Usando tema
+  box-shadow: ${({ theme }) => theme.audioCard?.boxShadow || '0 4px 16px rgba(80, 112, 255, 0.08)'};
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  border-left: 6px solid ${({ theme }) => theme.audioCard?.borderLeft || '#4f46e5'}; // Usando tema
+  border-left: 6px solid ${({ theme }) => theme.audioCard?.borderLeft || '#4f46e5'};
   transition: box-shadow 0.2s, border 0.2s;
   width: 100%;
 
@@ -108,8 +122,8 @@ const AudioCard = styled.div`
   }
 
   &:hover {
-    box-shadow: ${({ theme }) => theme.audioCard?.hoverBoxShadow || '0 8px 24px rgba(80, 112, 255, 0.13)'}; // Usando tema
-    border-left-color: ${({ theme }) => theme.audioCard?.hoverBorderLeft || '#06b6d4'}; // Usando tema
+    box-shadow: ${({ theme }) => theme.audioCard?.hoverBoxShadow || '0 8px 24px rgba(80, 112, 255, 0.13)'};
+    border-left-color: ${({ theme }) => theme.audioCard?.hoverBorderLeft || '#06b6d4'};
   }
 `;
 
@@ -117,285 +131,121 @@ const AudioTitle = styled.div`
   font-weight: 700;
   font-size: 1.08rem;
   margin-bottom: 0.25rem;
-  color: ${({ theme }) => theme.audioCard?.titleColor || theme.primary}; // Usando tema
+  color: ${({ theme }) => theme.audioCard?.titleColor || theme.primary};
   letter-spacing: 0.01em;
 `;
 
 const AudioDescription = styled.div`
   font-size: 0.97rem;
-  color: ${({ theme }) => theme.audioCard?.descriptionColor || theme.secondaryText}; // Usando tema
+  color: ${({ theme }) => theme.audioCard?.descriptionColor || theme.secondaryText};
   margin-bottom: 0.5rem;
 `;
 
-const StyledAudio = styled.audio`
-  width: 100%;
-  max-width: 340px;
-  min-width: 160px;
-  margin: 0.2rem 0;
-  border-radius: 8px;
-  background: ${({ theme }) => theme.styledAudio?.background || '#fff'}; // Usando tema
-  outline: none;
-  border: 2px solid ${({ theme }) => theme.styledAudio?.border || '#4f46e5'}; // Usando tema
-  box-shadow: ${({ theme }) => theme.styledAudio?.boxShadow || '0 2px 8px rgba(80, 112, 255, 0.10)'}; // Usando tema
-
-  &::-webkit-media-controls-panel {
-    background-color: ${({ theme }) => theme.styledAudio?.controlsPanelBg || '#e0e7ff'}; // Usando tema
-    border-radius: 8px;
-  }
-
-  @media (max-width: 600px) {
-    max-width: 100%;
-    min-width: 120px;
-  }
-`;
-
 const ModuleReturnButton = styled(Button)`
-  margin-bottom: 1.5rem; /* Ajuste este valor conforme necessário */
-  display: block; /* Para garantir que a margem funcione como esperado */
-  width: fit-content; /* Para que o botão não ocupe a largura total por padrão, a menos que o Button base já faça isso */
+  margin-bottom: 1.5rem;
+  display: block;
+  width: fit-content;
 
   @media (max-width: 768px) {
-    margin-bottom: 0.75rem; // Reduzido ainda mais para mobile
+    margin-bottom: 0.75rem;
   }
 `;
 
-// Novo componente para o botão de alternar layout
 const ToggleLayoutButton = styled.button`
   background: none;
   border: none;
-  color: ${({ theme }) => theme.primary}; // Usando tema
+  color: ${({ theme }) => theme.primary};
   cursor: pointer;
-  font-size: 1.2rem; // Tamanho do ícone
+  font-size: 1.2rem;
   padding: 0.25rem 0.5rem;
-  display: none; // Por padrão escondido
+  display: none;
 
-  @media (min-width: 993px) { // Exibir apenas em telas maiores que 992px
-    display: inline-flex; // Usar inline-flex para alinhar ícone
+  @media (min-width: 993px) {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
   }
 `;
 
-// Novo componente para o cabeçalho da Sidebar (título + botão)
 const SidebarHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  // Estilos que antes estavam em SidebarTitle
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor}; // Usando tema
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
 `;
 
+// --- Mark Complete Button ---
+const CompleteButtonWrapper = styled.div`
+  margin: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: ${fadeInUp} 0.5s ease-out 0.2s both;
+`;
 
-function LessonDetail() {
-  const { moduleId, lessonId } = useParams();
-  const navigate = useNavigate();
-  const [module, setModule] = useState(null);
-  const [lesson, setLesson] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('downloads');
-  const [isWideLayout, setIsWideLayout] = useState(false); // Estado para controlar o layout
+const MarkCompleteButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid;
 
-
-  useEffect(() => {
-    const fetchLesson = async () => {
-      setLoading(true);
-      try {
-        const response = await import('../data/ModuleData.json');
-        const foundModule = response.modules.find(m => m.id === parseInt(moduleId));
-        
-        if (foundModule) {
-          // Simular dados que faltam no JSON para o novo layout
-          const enrichedModule = {
-            ...foundModule,
-            stageName: foundModule.stageName || "Etapa Desconhecida",
-            stageOrder: foundModule.stageOrder || 1,
-            progress: foundModule.progress || Math.floor(Math.random() * 70) + 30, // Progresso aleatório do módulo
-            prevModuleId: foundModule.prevModuleId || (parseInt(moduleId) > 1 ? parseInt(moduleId) - 1 : null),
-            nextModuleId: foundModule.nextModuleId || (parseInt(moduleId) < response.modules.length ? parseInt(moduleId) + 1 : null),
-            lessons: foundModule.lessons.map(l => ({
-              ...l,
-              completed: l.completed === undefined ? Math.random() > 0.5 : l.completed, // Conclusão aleatória da aula
-              viewed: l.viewed === undefined ? Math.random() > 0.3 : l.viewed, // Visualização aleatória
-            }))
-          };
-          setModule(enrichedModule);
-
-          const lessonIndex = enrichedModule.lessons.findIndex(l => l.id === parseInt(lessonId));
-          
-          if (lessonIndex !== -1) {
-            const currentLesson = enrichedModule.lessons[lessonIndex];
-            setLesson(currentLesson);
-            // REMOVER: setLessonCompleted(currentLesson.completed); 
-            
-            // Definir aba ativa com base no conteúdo disponível
-            if (currentLesson.files && currentLesson.files.length > 0) {
-              setActiveTab('downloads');
-            } else if (currentLesson.audios && currentLesson.audios.length > 0) {
-              setActiveTab('audios');
-            } else if (currentLesson.textStudyContent) { // Supondo que textStudyContent exista
-              setActiveTab('textStudy');
-            }
-
-          } else {
-            setLesson(null); // Aula não encontrada
-          }
-        } else {
-          setModule(null); // Módulo não encontrado
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error('Erro ao carregar a aula:', error);
-        setLoading(false);
-      }
-    };
+  ${({ $completed, theme }) =>
+    $completed
+      ? `
+    background: ${theme.success};
+    border-color: ${theme.success};
+    color: white;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
     
-    fetchLesson();
-  }, [moduleId, lessonId]);
+    &:hover {
+      background: transparent;
+      color: ${theme.success};
+    }
+  `
+      : `
+    background: transparent;
+    border-color: ${theme.primary};
+    color: ${theme.primary};
 
-  // REMOVER: const handleToggleComplete = () => { ... };
-  
-  if (loading) {
-    return <LoadingContainer>Carregando aula...</LoadingContainer>;
+    &:hover {
+      background: ${theme.primary};
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      transform: translateY(-1px);
+    }
+  `}
+
+  svg {
+    font-size: 1.1rem;
+    ${({ $completed }) => $completed && `animation: ${checkmarkPop} 0.4s ease-out;`}
   }
-  
-  if (!module || !lesson) {
-    return (
-      <PageWrapper>
-        <ModuleReturnButton variant="outline" onClick={() => navigate(`/modulos/${moduleId || ''}`)}>
-          ← Voltar para o Módulo
-        </ModuleReturnButton>
-        <p>Aula ou módulo não encontrado.</p>
-      </PageWrapper>
-    );
+
+  @media (max-width: 576px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.8rem 1rem;
   }
-  
-  // Calcula a ordem da aula atual dentro do módulo
-  const currentLessonOrder = module.lessons.findIndex(l => l.id === lesson.id) + 1;
+`;
 
-  return (
-    <PageWrapper>
-      <ModuleReturnButton variant="outline" onClick={() => navigate(`/modulos/${module.id}`)}>
-        ← Voltar para o Módulo
-      </ModuleReturnButton>
-      
-      <ContentLayout $isWideLayout={isWideLayout}>
-        <MainContentColumn $isWideLayout={isWideLayout}>
-          <ResponsiveVideoWrapper>
-            <iframe
-              src={lesson.videoUrl}
-              title={lesson.title}
-              allowFullScreen
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
-            />
-          </ResponsiveVideoWrapper>
+const CompletionLabel = styled.span`
+  font-size: 0.85rem;
+  color: ${({ theme }) => theme.secondaryText};
+`;
 
-          <LessonHeaderDetails>
-            <BreadcrumbsPath>
-              {/* Idealmente, o nome da etapa viria do módulo ou de um contexto superior */}
-              <Link to={`/etapas/${module.stageOrder}`}>{module.stageName || `Etapa ${module.stageOrder}`}</Link>
-              {' > '}
-              <Link to={`/modulos/${module.id}`}>{module.name}</Link>
-            </BreadcrumbsPath>
-            <LessonTitleStyled>{lesson.title}</LessonTitleStyled>
-            <LessonProgressStatus>
-              <span> {/* Primeira linha do status */}
-                Aula {currentLessonOrder}/{module.lessons.length}
-                {lesson.viewed && <span className="lesson-view-status"> | 100% visualizada</span>}
-              </span>
-              <span> {/* Segunda linha do status */}
-                Módulo: {module.progress}% concluído
-                <span className="module-progress-bar"><div style={{ width: `${module.progress}%` }}></div></span>
-              </span>
-            </LessonProgressStatus>
-          </LessonHeaderDetails>
-          
-          <TabsWrapper>
-            <Tab $active={activeTab === 'downloads'} onClick={() => setActiveTab('downloads')}>Downloads</Tab>
-            <Tab $active={activeTab === 'audios'} onClick={() => setActiveTab('audios')}>Áudios</Tab>
-            <Tab $active={activeTab === 'textStudy'} onClick={() => setActiveTab('textStudy')}>Estudo do Texto</Tab>
-          </TabsWrapper>
-
-          {activeTab === 'downloads' && (
-            lesson.files && lesson.files.length > 0 
-            ? <FileList files={lesson.files} /> 
-            : <p>Nenhum download disponível para esta aula.</p>
-          )}
-          {activeTab === 'audios' && (
-            lesson.audios && lesson.audios.length > 0 ? (
-              <AudioListWrapper>
-                {lesson.audios.map(audio => (
-                  <AudioCard key={audio.id}>
-                    <AudioTitle>{audio.title}</AudioTitle>
-                    {audio.description && <AudioDescription>{audio.description}</AudioDescription>}
-                    <AudioPlayer title={audio.title} description={audio.description} audioUrl={audio.fileUrl} transcript={audio.transcript} />
-                  </AudioCard>
-                ))}
-              </AudioListWrapper>
-            ) : <p>Nenhum áudio disponível para esta aula.</p>
-          )}
-          {activeTab === 'textStudy' && (
-            // Substitua por seu componente ou conteúdo de "Estudo do Texto"
-            lesson.textStudyContent 
-            ? <div>{lesson.textStudyContent}</div> 
-            : <p>Nenhum estudo de texto disponível para esta aula.</p>
-          )}
-        </MainContentColumn>
-        
-        <SidebarColumn $isWideLayout={isWideLayout}>
-          <SidebarHeader>
-            <SidebarTitle>Aulas - {module.name}</SidebarTitle>
-            <ToggleLayoutButton onClick={() => setIsWideLayout(prev => !prev)}>
-              {isWideLayout ? <FaChevronRight /> : <FaChevronLeft />}
-            </ToggleLayoutButton>
-          </SidebarHeader>
-          {module.lessons && module.lessons.length > 0 ? (
-            <NextLessonsList>
-              {module.lessons.map(l => (
-                <ModuleLessonItem key={l.id} $active={l.id === lesson.id} $completed={l.completed}>
-                  <Link to={`/modulos/${module.id}/aula/${l.id}`}>
-                    {l.id === lesson.id 
-                      ? <FaPlayCircle className="play-icon" /> 
-                      : (l.completed ? <FaCheckCircle /> : <FaCheckCircle style={{ opacity: 0.3 }}/>) // Ícone mais sutil para não completas
-                    }
-                    {l.title}
-                  </Link>
-                </ModuleLessonItem>
-              ))}
-            </NextLessonsList>
-          ) : (
-            <p>Nenhuma aula encontrada neste módulo.</p>
-          )}
-          {(module.prevModuleId || module.nextModuleId) && (
-            <ModuleNavigationLinks>
-              {module.prevModuleId ? (
-                <Link to={`/modulos/${module.prevModuleId}`}>&larr; Módulo Anterior</Link>
-              ) : <span></span> /* Placeholder para manter o alinhamento */}
-              {module.nextModuleId ? (
-                <Link to={`/modulos/${module.nextModuleId}`}>Próximo Módulo &rarr;</Link>
-              ) : <span></span> /* Placeholder */}
-            </ModuleNavigationLinks>
-          )}
-        </SidebarColumn>
-      </ContentLayout>
-    </PageWrapper>
-  );
-}
-
-export default LessonDetail;
-
-// --- Adicionar definições para componentes que faltam ---
+// --- Layout Components ---
 const ContentLayout = styled.div`
   display: flex;
-  gap: 1.5rem; // Espaçamento entre conteúdo principal e sidebar
-
-  // Comportamento padrão para telas maiores (sidebar à direita)
+  gap: 1.5rem;
   flex-direction: row;
 
-  // Se isWideLayout for true EM TELAS MAIORES, empilha
   ${({ $isWideLayout }) =>
     $isWideLayout &&
     `
@@ -404,17 +254,15 @@ const ContentLayout = styled.div`
     }
   `}
 
-  // Em telas menores, sempre empilha (ignora isWideLayout para esta propriedade)
   @media (max-width: 992px) { 
     flex-direction: column;
   }
 `;
 
 const MainContentColumn = styled.div`
-  flex: 3; // Ocupa mais espaço por padrão
+  flex: 3;
   min-width: 0; 
 
-  // Se isWideLayout for true EM TELAS MAIORES, ocupa largura total
   ${({ $isWideLayout }) =>
     $isWideLayout &&
     `
@@ -426,10 +274,9 @@ const MainContentColumn = styled.div`
 `;
 
 const SidebarColumn = styled.div`
-  flex: 1; // Ocupa menos espaço por padrão
+  flex: 1;
   min-width: 0; 
   
-  // Se isWideLayout for true EM TELAS MAIORES, ocupa largura total e adiciona margem
    ${({ $isWideLayout }) =>
     $isWideLayout &&
     `
@@ -442,38 +289,37 @@ const SidebarColumn = styled.div`
   
   @media (max-width: 992px) {
     margin-top: 2rem; 
-    // flex-basis: 100%; implicitamente
   }
 `;
 
 const LessonHeaderDetails = styled.div`
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: ${({ theme }) => theme.cardBg}; // Usando tema
+  background-color: ${({ theme }) => theme.cardBg};
   border-radius: 8px;
-  border: 1px solid ${({ theme }) => theme.cardBorder}; // Adicionando borda do card
+  border: 1px solid ${({ theme }) => theme.cardBorder};
 
   @media (max-width: 768px) {
-    padding: 0.25rem 0.5rem; 
-    margin-bottom: 0.25rem; // Reduzido drasticamente para mobile
+    padding: 0.5rem 0.75rem; 
+    margin-bottom: 0.5rem;
   }
 `;
 
 const BreadcrumbsPath = styled.div`
   font-size: 0.9rem;
-  color: ${({ theme }) => theme.secondaryText}; // Usando tema
+  color: ${({ theme }) => theme.secondaryText};
   margin-bottom: 0.5rem;
 
   a {
-    color: ${({ theme }) => theme.primary}; // Usando tema
+    color: ${({ theme }) => theme.primary};
     text-decoration: none;
     &:hover {
       text-decoration: underline;
     }
 
     @media (max-width: 768px) {
-      font-size: 0.7rem; // Reduzido para mobile
-      margin-bottom: 0.15rem; // Reduzido para mobile
+      font-size: 0.7rem;
+      margin-bottom: 0.15rem;
     }
   }
 `;
@@ -482,55 +328,56 @@ const LessonTitleStyled = styled.h1`
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: ${({ theme }) => theme.text}; // Usando tema
+  color: ${({ theme }) => theme.text};
 
   @media (max-width: 768px) {
-    font-size: 1.2rem; // Reduzido mais para mobile
-    margin-bottom: 0.25rem; // Reduzido para mobile
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
   }
 `;
 
 const LessonProgressStatus = styled.div`
   font-size: 0.9rem;
-  color: ${({ theme }) => theme.secondaryText}; // Usando tema
+  color: ${({ theme }) => theme.secondaryText};
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 
   .lesson-view-status {
-    color: ${({ theme }) => theme.success}; // Usando tema
+    color: ${({ theme }) => theme.success};
     font-weight: 500;
   }
 
   .module-progress-bar {
-    height: 6px; // Barra de progresso um pouco mais fina
-    background-color: ${({ theme }) => theme.borderColor}; // Usando tema
+    height: 6px;
+    background-color: ${({ theme }) => theme.borderColor};
     border-radius: 3px;
     overflow: hidden;
-    margin-top: 0.15rem; // Reduzido margin-top
+    margin-top: 0.15rem;
     
     div {
       height: 100%;
-      background-color: ${({ theme }) => theme.primary}; // Usando tema
+      background-color: ${({ theme }) => theme.primary};
       border-radius: 3px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
   @media (max-width: 768px) {
-    font-size: 0.7rem; // Reduzido para mobile
-    margin-bottom: 0.25rem; // Reduzido significativamente para mobile
-    gap: 0.15rem; // Reduzido para mobile
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
+    gap: 0.15rem;
   }
 `;
 
 const SidebarTitle = styled.h3`
   font-size: 1.2rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.text}; // Usando tema
+  color: ${({ theme }) => theme.text};
 
   @media (max-width: 768px) {
-    font-size: 1.1rem; // Reduzido para mobile
+    font-size: 1.1rem;
   }
 `;
 
@@ -550,33 +397,33 @@ const ModuleLessonItem = styled.li`
     padding: 0.75rem;
     border-radius: 6px;
     text-decoration: none;
-    color: ${({ theme, $active, $completed }) => $active ? theme.primary : ($completed ? theme.text : theme.secondaryText)}; // Usando tema
-    background-color: ${({ theme, $active }) => $active ? theme.primaryLight : 'transparent'}; // Usando tema
+    color: ${({ theme, $active, $completed }) => $active ? theme.primary : ($completed ? theme.text : theme.secondaryText)};
+    background-color: ${({ theme, $active }) => $active ? theme.primaryLight : 'transparent'};
     font-weight: ${({ $active }) => $active ? '600' : '400'};
     transition: background-color 0.2s, color 0.2s;
 
     @media (max-width: 768px) {
-      font-size: 0.9rem; // Tamanho de fonte para os itens da lista no mobile
+      font-size: 0.9rem;
       padding: 0.6rem;
       gap: 0.5rem;
     }
 
     &:hover {
-      background-color: ${({ theme }) => theme.primaryLight}; // Usando tema
-      color: ${({ theme }) => theme.primary}; // Usando tema
+      background-color: ${({ theme }) => theme.primaryLight};
+      color: ${({ theme }) => theme.primary};
     }
 
     .play-icon {
-      color: ${({ theme }) => theme.primary}; // Usando tema
+      color: ${({ theme }) => theme.primary};
     }
     
     svg { 
       font-size: 1.1rem;
-      color: ${({ theme, $completed, $active }) => $active ? theme.primary : ($completed ? theme.success : theme.secondaryText)}; // Usando tema
+      color: ${({ theme, $completed, $active }) => $active ? theme.primary : ($completed ? theme.success : theme.secondaryText)};
       opacity: ${({ $completed, $active }) => $active ? 1 : ($completed ? 1 : 0.5)};
       
       @media (max-width: 768px) {
-        font-size: 1rem; // Ícones um pouco menores no mobile
+        font-size: 1rem;
       }
     }
   }
@@ -585,12 +432,12 @@ const ModuleLessonItem = styled.li`
 const ModuleNavigationLinks = styled.div`
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid ${({ theme }) => theme.borderColor}; // Usando tema
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
 
   a {
-    color: ${({ theme }) => theme.primary}; // Usando tema
+    color: ${({ theme }) => theme.primary};
     text-decoration: none;
     font-weight: 500;
     
@@ -599,3 +446,215 @@ const ModuleNavigationLinks = styled.div`
     }
   }
 `;
+
+
+function LessonDetail() {
+  const { moduleId, lessonId } = useParams();
+  const navigate = useNavigate();
+  const [module, setModule] = useState(null);
+  const [lesson, setLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('downloads');
+  const [isWideLayout, setIsWideLayout] = useState(false);
+
+  const {
+    isLessonCompleted,
+    toggleLessonCompleted,
+    setLastWatched,
+    getModuleProgress,
+  } = useUserProgress();
+
+  useEffect(() => {
+    const fetchLesson = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/modules/${moduleId}`);
+        if (!response.ok) {
+          throw new Error(`Erro ao buscar módulo: ${response.status}`);
+        }
+        const foundModule = await response.json();
+
+        if (foundModule) {
+          const enrichedModule = {
+            ...foundModule,
+            lessons: Array.isArray(foundModule.lessons) ? foundModule.lessons : [],
+          };
+          setModule(enrichedModule);
+
+          const lessonIndex = enrichedModule.lessons.findIndex(l => l.id === parseInt(lessonId));
+
+          if (lessonIndex !== -1) {
+            const currentLesson = enrichedModule.lessons[lessonIndex];
+            setLesson(currentLesson);
+
+            // Registrar "Continue Assistindo"
+            setLastWatched(currentLesson.id, enrichedModule.id);
+
+            // Definir aba ativa com base no conteúdo disponível
+            if (currentLesson.files && currentLesson.files.length > 0) {
+              setActiveTab('downloads');
+            } else if (currentLesson.audios && currentLesson.audios.length > 0) {
+              setActiveTab('audios');
+            } else if (currentLesson.textStudyContent) {
+              setActiveTab('textStudy');
+            }
+
+          } else {
+            setLesson(null);
+          }
+        } else {
+          setModule(null);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Erro ao carregar a aula:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchLesson();
+  }, [moduleId, lessonId, setLastWatched]);
+
+  if (loading) {
+    return <LoadingContainer>Carregando aula...</LoadingContainer>;
+  }
+
+  if (!module || !lesson) {
+    return (
+      <PageWrapper>
+        <ModuleReturnButton variant="outline" onClick={() => navigate(`/modulos/${moduleId || ''}`)}>
+          ← Voltar para o Módulo
+        </ModuleReturnButton>
+        <p>Aula ou módulo não encontrado.</p>
+      </PageWrapper>
+    );
+  }
+
+  const currentLessonOrder = module.lessons.findIndex(l => l.id === lesson.id) + 1;
+  const lessonCompleted = isLessonCompleted(lesson.id);
+  const moduleProgress = getModuleProgress(module.id, module.lessons);
+
+  return (
+    <PageWrapper>
+      <ModuleReturnButton variant="outline" onClick={() => navigate(`/modulos/${module.id}`)}>
+        ← Voltar para o Módulo
+      </ModuleReturnButton>
+
+      <ContentLayout $isWideLayout={isWideLayout}>
+        <MainContentColumn $isWideLayout={isWideLayout}>
+          <ResponsiveVideoWrapper>
+            <iframe
+              src={lesson.videoUrl}
+              title={lesson.title}
+              allowFullScreen
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-presentation"
+            />
+          </ResponsiveVideoWrapper>
+
+          <LessonHeaderDetails>
+            <BreadcrumbsPath>
+              <Link to={`/modulos`}>{module.stageName || `Etapa ${module.stageOrder}`}</Link>
+              {' > '}
+              <Link to={`/modulos/${module.id}`}>{module.title}</Link>
+            </BreadcrumbsPath>
+            <LessonTitleStyled>{lesson.title}</LessonTitleStyled>
+            <LessonProgressStatus>
+              <span>
+                Aula {currentLessonOrder}/{module.lessons.length}
+                {lessonCompleted && <span className="lesson-view-status"> | ✔ Concluída</span>}
+              </span>
+              <span>
+                Módulo: {moduleProgress}% concluído
+                <span className="module-progress-bar"><div style={{ width: `${moduleProgress}%` }}></div></span>
+              </span>
+            </LessonProgressStatus>
+          </LessonHeaderDetails>
+
+          {/* Botão de Marcar como Concluída */}
+          <CompleteButtonWrapper>
+            <MarkCompleteButton
+              $completed={lessonCompleted}
+              onClick={() => toggleLessonCompleted(lesson.id, module.id)}
+            >
+              {lessonCompleted ? <FaCheck /> : <FaCheckCircle />}
+              {lessonCompleted ? 'Aula Concluída' : 'Marcar Aula como Concluída'}
+            </MarkCompleteButton>
+            {lessonCompleted && (
+              <CompletionLabel>Clique novamente para desmarcar</CompletionLabel>
+            )}
+          </CompleteButtonWrapper>
+
+          <TabsWrapper>
+            <Tab $active={activeTab === 'downloads'} onClick={() => setActiveTab('downloads')}>Downloads</Tab>
+            <Tab $active={activeTab === 'audios'} onClick={() => setActiveTab('audios')}>Áudios</Tab>
+            <Tab $active={activeTab === 'textStudy'} onClick={() => setActiveTab('textStudy')}>Estudo do Texto</Tab>
+          </TabsWrapper>
+
+          {activeTab === 'downloads' && (
+            lesson.files && lesson.files.length > 0
+              ? <FileList files={lesson.files} />
+              : <p>Nenhum download disponível para esta aula.</p>
+          )}
+          {activeTab === 'audios' && (
+            lesson.audios && lesson.audios.length > 0 ? (
+              <AudioListWrapper>
+                {lesson.audios.map(audio => (
+                  <AudioCard key={audio.id}>
+                    <AudioTitle>{audio.title}</AudioTitle>
+                    {audio.description && <AudioDescription>{audio.description}</AudioDescription>}
+                    <AudioPlayer title={audio.title} description={audio.description} audioUrl={audio.fileUrl} transcript={audio.transcript} />
+                  </AudioCard>
+                ))}
+              </AudioListWrapper>
+            ) : <p>Nenhum áudio disponível para esta aula.</p>
+          )}
+          {activeTab === 'textStudy' && (
+            lesson.textStudyContent
+              ? <div>{lesson.textStudyContent}</div>
+              : <p>Nenhum estudo de texto disponível para esta aula.</p>
+          )}
+        </MainContentColumn>
+
+        <SidebarColumn $isWideLayout={isWideLayout}>
+          <SidebarHeader>
+            <SidebarTitle>Aulas - {module.title}</SidebarTitle>
+            <ToggleLayoutButton onClick={() => setIsWideLayout(prev => !prev)}>
+              {isWideLayout ? <FaChevronRight /> : <FaChevronLeft />}
+            </ToggleLayoutButton>
+          </SidebarHeader>
+          {module.lessons && module.lessons.length > 0 ? (
+            <NextLessonsList>
+              {module.lessons.map(l => (
+                <ModuleLessonItem key={l.id} $active={l.id === lesson.id} $completed={isLessonCompleted(l.id)}>
+                  <Link to={`/modulos/${module.id}/aula/${l.id}`}>
+                    {l.id === lesson.id
+                      ? <FaPlayCircle className="play-icon" />
+                      : (isLessonCompleted(l.id) ? <FaCheckCircle /> : <FaCheckCircle style={{ opacity: 0.3 }} />)
+                    }
+                    {l.title}
+                  </Link>
+                </ModuleLessonItem>
+              ))}
+            </NextLessonsList>
+          ) : (
+            <p>Nenhuma aula encontrada neste módulo.</p>
+          )}
+          {(module.prevModuleId || module.nextModuleId) && (
+            <ModuleNavigationLinks>
+              {module.prevModuleId ? (
+                <Link to={`/modulos/${module.prevModuleId}`}>&larr; Módulo Anterior</Link>
+              ) : <span></span>}
+              {module.nextModuleId ? (
+                <Link to={`/modulos/${module.nextModuleId}`}>Próximo Módulo &rarr;</Link>
+              ) : <span></span>}
+            </ModuleNavigationLinks>
+          )}
+        </SidebarColumn>
+      </ContentLayout>
+    </PageWrapper>
+  );
+}
+
+export default LessonDetail;

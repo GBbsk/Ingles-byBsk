@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Button from '../components/Button';
+import Button from '../components/ui/Button';
 
 const LoginContainer = styled.div`
   max-width: 400px;
   margin: 2rem auto;
-  background-color: var(--card-bg);
+  background-color: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: ${({ theme }) => theme.shadowMd};
 `;
 
 const LoginTitle = styled.h1`
   font-size: 1.8rem;
   font-weight: 600;
   margin-bottom: 1.5rem;
-  color: var(--text-primary);
+  color: ${({ theme }) => theme.text};
   text-align: center;
 `;
 
@@ -28,26 +29,28 @@ const Label = styled.label`
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: ${({ theme }) => theme.text};
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
+  background-color: ${({ theme }) => theme.body};
+  color: ${({ theme }) => theme.text};
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
   
   &:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary}33;
   }
 `;
 
 const ErrorMessage = styled.div`
-  color: var(--error);
+  color: ${({ theme }) => theme.error};
   font-size: 0.9rem;
   margin-top: 0.5rem;
 `;

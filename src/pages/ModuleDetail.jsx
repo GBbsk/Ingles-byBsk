@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import Button from '../components/Button';
+import styled, { keyframes } from 'styled-components';
+import { FaCheckCircle } from 'react-icons/fa';
+import Button from '../components/ui/Button';
+import { useUserProgress } from '../hooks/useUserProgress';
+
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
 
 const ModuleContainer = styled.div`
   background-color: ${({ theme }) => theme.cardBg};
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Idealmente, a sombra também viria do tema */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
+  animation: ${fadeInUp} 0.5s ease-out;
   
   @media (max-width: 576px) {
     padding: 1.25rem;
@@ -65,6 +73,39 @@ const ModuleDescription = styled.p`
   margin-bottom: 1rem;
 `;
 
+const ModuleProgressWrapper = styled.div`
+  margin-top: 0.5rem;
+
+  .module-prog-label {
+    font-size: 0.85rem;
+    color: ${({ theme }) => theme.secondaryText};
+    margin-bottom: 0.35rem;
+    display: flex;
+    justify-content: space-between;
+
+    strong {
+      color: ${({ theme }) => theme.primary};
+    }
+  }
+
+  .module-prog-bar {
+    height: 8px;
+    background-color: ${({ theme }) => theme.borderColor};
+    border-radius: 4px;
+    overflow: hidden;
+
+    div {
+      height: 100%;
+      background: ${({ $progress, theme }) =>
+    $progress >= 100
+      ? theme.success
+      : `linear-gradient(90deg, ${theme.primary}, #e50914)`};
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+`;
+
 const LessonsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -72,18 +113,20 @@ const LessonsList = styled.div`
 `;
 
 const LessonCard = styled.div`
-  background-color: ${({ theme }) => theme.cardBg}; /* Alterado de var(--background) para theme.cardBg */
+  background-color: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme, $completed }) => $completed ? theme.success + '33' : theme.cardBorder};
   border-radius: 8px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
   cursor: pointer;
   
   &:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    border-color: ${({ theme }) => theme.primary};
   }
   
   @media (max-width: 576px) {
@@ -98,13 +141,14 @@ const LessonNumber = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: ${({ theme }) => theme.primary};
-  color: white; /* Mantido branco, assumindo bom contraste */
+  background-color: ${({ theme, $completed }) => $completed ? theme.success : theme.primary};
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   flex-shrink: 0;
+  transition: background-color 0.3s;
 `;
 
 const LessonInfo = styled.div`
@@ -116,6 +160,18 @@ const LessonTitle = styled.h3`
   font-weight: 500;
   margin-bottom: 0.25rem;
   color: ${({ theme }) => theme.text};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const CompletedTag = styled.span`
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: ${({ theme }) => theme.success};
+  background-color: ${({ theme }) => theme.success + '15'};
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
 `;
 
 const LessonDescription = styled.p`
@@ -161,45 +217,45 @@ function ModuleDetail() {
   const navigate = useNavigate();
   const [module, setModule] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+  const { isLessonCompleted, getModuleProgress } = useUserProgress();
+
   useEffect(() => {
-    // Carregar os dados do módulo específico
     const fetchModule = async () => {
       try {
-        // Em um ambiente real, isso seria uma chamada de API
-        // Mas como estamos usando um arquivo JSON local, vamos importá-lo diretamente
-        const response = await import('../data/ModuleData.json');
-        const foundModule = response.modules.find(m => m.id === parseInt(moduleId));
-        
-        if (foundModule) {
-          // Ordenar as aulas pela propriedade 'order'
-          foundModule.lessons = [...foundModule.lessons].sort((a, b) => a.order - b.order);
-          setModule(foundModule);
+        const response = await fetch(`/api/modules/${moduleId}`);
+        if (!response.ok) {
+          throw new Error(`Erro na requisição: ${response.status}`);
         }
-        
+        const data = await response.json();
+
+        if (data) {
+          data.lessons = [...(data.lessons || [])].sort((a, b) => a.order - b.order);
+          setModule(data);
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('Erro ao carregar o módulo:', error);
         setLoading(false);
       }
     };
-    
+
     fetchModule();
   }, [moduleId]);
-  
+
   const handleLessonClick = (lessonId) => {
     navigate(`/modulos/${moduleId}/aula/${lessonId}`);
   };
-  
+
   if (loading) {
     return <LoadingContainer>Carregando módulo...</LoadingContainer>;
   }
-  
+
   if (!module) {
     return (
       <div>
-        <BackButton 
-          variant="outline" 
+        <BackButton
+          variant="outline"
           onClick={() => navigate('/modulos')}
         >
           ← Voltar para Módulos
@@ -208,16 +264,18 @@ function ModuleDetail() {
       </div>
     );
   }
-  
+
+  const moduleProgress = getModuleProgress(module.id, module.lessons || []);
+
   return (
     <div>
-      <BackButton 
-        variant="outline" 
+      <BackButton
+        variant="outline"
         onClick={() => navigate('/modulos')}
       >
         ← Voltar para Módulos
       </BackButton>
-      
+
       <ModuleContainer>
         <ModuleHeader>
           <ModuleImage image={module.image} />
@@ -225,33 +283,51 @@ function ModuleDetail() {
             <ModuleTitle>{module.title}</ModuleTitle>
             <ModuleDescription>{module.description}</ModuleDescription>
             <div>{module.lessons.length} aulas</div>
+            <ModuleProgressWrapper $progress={moduleProgress}>
+              <div className="module-prog-label">
+                <span>Progresso do Módulo</span>
+                <strong>{moduleProgress}%</strong>
+              </div>
+              <div className="module-prog-bar">
+                <div style={{ width: `${moduleProgress}%` }}></div>
+              </div>
+            </ModuleProgressWrapper>
           </ModuleInfo>
         </ModuleHeader>
-        
+
         <LessonsList>
-          {module.lessons.map((lesson, index) => (
-            <LessonCard 
-              key={lesson.id} 
-              onClick={() => handleLessonClick(lesson.id)}
-            >
-              <LessonNumber>{index + 1}</LessonNumber>
-              <LessonInfo>
-                <LessonTitle>{lesson.title}</LessonTitle>
-                <LessonDescription>{lesson.description}</LessonDescription>
-                <LessonMeta>
-                  <LessonDuration>
-                    <span>⏱️</span> {lesson.duration}
-                  </LessonDuration>
-                  {lesson.files && lesson.files.length > 0 && (
-                    <span>📄 {lesson.files.length} arquivos</span>
-                  )}
-                  {lesson.audios && lesson.audios.length > 0 && (
-                    <span>🔊 {lesson.audios.length} áudios</span>
-                  )}
-                </LessonMeta>
-              </LessonInfo>
-            </LessonCard>
-          ))}
+          {module.lessons.map((lesson, index) => {
+            const completed = isLessonCompleted(lesson.id);
+            return (
+              <LessonCard
+                key={lesson.id}
+                onClick={() => handleLessonClick(lesson.id)}
+                $completed={completed}
+              >
+                <LessonNumber $completed={completed}>
+                  {completed ? <FaCheckCircle /> : index + 1}
+                </LessonNumber>
+                <LessonInfo>
+                  <LessonTitle>
+                    {lesson.title}
+                    {completed && <CompletedTag>Concluída</CompletedTag>}
+                  </LessonTitle>
+                  <LessonDescription>{lesson.description}</LessonDescription>
+                  <LessonMeta>
+                    <LessonDuration>
+                      <span>⏱️</span> {lesson.duration || '—'}
+                    </LessonDuration>
+                    {lesson.files && lesson.files.length > 0 && (
+                      <span>📄 {lesson.files.length} arquivos</span>
+                    )}
+                    {lesson.audios && lesson.audios.length > 0 && (
+                      <span>🔊 {lesson.audios.length} áudios</span>
+                    )}
+                  </LessonMeta>
+                </LessonInfo>
+              </LessonCard>
+            );
+          })}
         </LessonsList>
       </ModuleContainer>
     </div>

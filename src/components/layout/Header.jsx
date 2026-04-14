@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { FaGraduationCap, FaHome, FaLayerGroup, FaSignInAlt } from 'react-icons/fa';
-import ThemeToggleButton from '../ThemeToggleButton/ThemeToggleButton';
+import ThemeToggleButton from './ThemeToggleButton';
 
 const HeaderContainer = styled.header`
   display: flex;

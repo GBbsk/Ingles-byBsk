@@ -1,9 +1,8 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { FaGraduationCap, FaHeart } from 'react-icons/fa';
 
-// Esta altura deve corresponder à altura real do seu Header global (definido em App.jsx).
-// Ajuste este valor conforme a altura real do seu Header.
-const HEADER_HEIGHT = '65px'; 
+const HEADER_HEIGHT = '60px'; 
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -13,28 +12,31 @@ const LayoutContainer = styled.div`
 
 const MainContent = styled.main`
   flex-grow: 1;
-  padding-top: ${HEADER_HEIGHT}; /* Adiciona espaço no topo para o Header global */
-  /* Mantendo o padding inferior original e permitindo que className="container" controle o restante */
-  padding-bottom: 2rem; 
-  /* Se a classe "container" não aplicar max-width e centralização, você pode adicionar:
-     max-width: 1200px;
-     margin: 0 auto;
-     padding-left: 20px; // Exemplo de padding horizontal
-     padding-right: 20px; // Exemplo de padding horizontal
-  */
+  padding-top: ${HEADER_HEIGHT};
+  padding-bottom: 2rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+
+  @media (max-width: 576px) {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 `;
 
 const FooterStyled = styled.footer`
-  background-color: ${({ theme }) => theme.cardBg}; /* Exemplo, ajuste para theme.footerBg se definido */
-  padding: 2rem 0;
-  margin-top: 3rem;
+  background-color: ${({ theme }) => theme.cardBg};
+  padding: 2.5rem 0 1.5rem;
+  margin-top: 4rem;
   border-top: 1px solid ${({ theme }) => theme.borderColor};
 `;
 
 const FooterContent = styled.div`
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -42,10 +44,23 @@ const FooterContent = styled.div`
 `;
 
 const FooterLogo = styled.div`
-  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  color: ${({ theme }) => theme.primary};
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+
+  svg {
+    color: ${({ theme }) => theme.primary};
+  }
+
+  span {
+    background: ${({ theme }) => theme.accentGradient};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 `;
 
 const FooterLinks = styled.div`
@@ -55,7 +70,7 @@ const FooterLinks = styled.div`
 
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.75rem;
     width: 100%;
     align-items: center;
   }
@@ -63,25 +78,40 @@ const FooterLinks = styled.div`
 
 const FooterLink = styled.a`
   color: ${({ theme }) => theme.secondaryText};
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
   cursor: pointer;
   text-decoration: none;
-  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.35rem;
+  border-radius: 6px;
 
   &:hover {
     color: ${({ theme }) => theme.primary};
+    text-decoration: none;
   }
+`;
 
-  @media (max-width: 768px) {
-    font-size: 1.1rem;
-    width: 100%;
-    text-align: center;
-  }
+const Divider = styled.hr`
+  border: none;
+  height: 1px;
+  background: ${({ theme }) => theme.borderColor};
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto 1rem;
 `;
 
 const Copyright = styled.p`
   color: ${({ theme }) => theme.secondaryText};
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  svg {
+    color: #ef4444;
+    font-size: 0.7rem;
+  }
 `;
 
 function MainLayout() {
@@ -93,20 +123,25 @@ function MainLayout() {
 
   return (
     <LayoutContainer>
-      {/* O Header que existia aqui foi removido, pois agora é global em App.jsx */}
-      <MainContent className="container"> {/* Mantenha className="container" se ela for usada para estilização de largura/centralização */}
+      <MainContent>
         <Outlet />
       </MainContent>
 
       <FooterStyled>
         <FooterContent>
-          <FooterLogo>Curso de Inglês</FooterLogo>
+          <FooterLogo>
+            <FaGraduationCap />
+            <span>English Platform</span>
+          </FooterLogo>
           <FooterLinks>
             <FooterLink onClick={() => handleFooterNavigation('/')}>Home</FooterLink>
             <FooterLink onClick={() => handleFooterNavigation('/modulos')}>Módulos</FooterLink>
             <FooterLink onClick={() => handleFooterNavigation('/login')}>Área do Aluno</FooterLink>
           </FooterLinks>
-          <Copyright>© {new Date().getFullYear()} Curso de Inglês. Todos os direitos reservados.</Copyright>
+          <Divider />
+          <Copyright>
+            Feito com <FaHeart /> — © {new Date().getFullYear()} English Platform
+          </Copyright>
         </FooterContent>
       </FooterStyled>
     </LayoutContainer>
