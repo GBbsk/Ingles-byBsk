@@ -3,8 +3,8 @@
  */
 
 import { Router } from 'express';
-import { authenticate } from './shared/auth.js';
-import * as resourceController from './controllers/resourceController.js';
+import { authenticate } from '../shared/auth.js';
+import * as resourceController from '../controllers/resourceController.js';
 
 const router = Router();
 
