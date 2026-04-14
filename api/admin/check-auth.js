@@ -2,8 +2,8 @@
  * Vercel Serverless Function — GET /api/admin/check-auth
  */
 
-import { authenticateAdmin } from './server/shared/auth.js';
-import { corsMiddleware, runMiddleware } from './server/shared/cors.js';
+import { authenticateAdmin } from '../../server/shared/auth.js';
+import { corsMiddleware, runMiddleware } from '../../server/shared/cors.js';
 
 export default async function handler(req, res) {
   await runMiddleware(req, res, corsMiddleware);
