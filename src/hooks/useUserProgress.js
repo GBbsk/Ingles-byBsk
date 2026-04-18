@@ -42,48 +42,44 @@ export function useUserProgress() {
     saveProgress(progress);
   }, [progress]);
 
-  /**
-   * Marca uma aula como concluída
-   */
   const markLessonCompleted = useCallback((lessonId, moduleId) => {
-    setProgress((prev) => ({
-      ...prev,
-      completedLessons: {
-        ...prev.completedLessons,
-        [lessonId]: {
-          moduleId: Number(moduleId),
-          completedAt: new Date().toISOString(),
+    setProgress((prev) => {
+      const existingCompleted = prev?.completedLessons || {};
+      return {
+        ...prev,
+        completedLessons: {
+          ...existingCompleted,
+          [lessonId]: {
+            moduleId: Number(moduleId),
+            completedAt: new Date().toISOString(),
+          },
         },
-      },
-    }));
+      };
+    });
   }, []);
 
-  /**
-   * Remove a marcação de concluída de uma aula
-   */
   const unmarkLessonCompleted = useCallback((lessonId) => {
     setProgress((prev) => {
-      const updated = { ...prev.completedLessons };
+      const existingCompleted = prev?.completedLessons || {};
+      const updated = { ...existingCompleted };
       delete updated[lessonId];
       return { ...prev, completedLessons: updated };
     });
   }, []);
 
-  /**
-   * Alterna o estado de conclusão
-   */
   const toggleLessonCompleted = useCallback((lessonId, moduleId) => {
     setProgress((prev) => {
-      const isCompleted = !!prev.completedLessons[lessonId];
+      const existingCompleted = prev?.completedLessons || {};
+      const isCompleted = !!existingCompleted[lessonId];
       if (isCompleted) {
-        const updated = { ...prev.completedLessons };
+        const updated = { ...existingCompleted };
         delete updated[lessonId];
         return { ...prev, completedLessons: updated };
       } else {
         return {
           ...prev,
           completedLessons: {
-            ...prev.completedLessons,
+            ...existingCompleted,
             [lessonId]: {
               moduleId: Number(moduleId),
               completedAt: new Date().toISOString(),
@@ -94,14 +90,11 @@ export function useUserProgress() {
     });
   }, []);
 
-  /**
-   * Verifica se uma aula está concluída
-   */
   const isLessonCompleted = useCallback(
     (lessonId) => {
-      return !!progress.completedLessons[lessonId];
+      return !!(progress?.completedLessons && progress.completedLessons[lessonId]);
     },
-    [progress.completedLessons]
+    [progress?.completedLessons]
   );
 
   /**
@@ -118,28 +111,20 @@ export function useUserProgress() {
     }));
   }, []);
 
-  /**
-   * Calcula o progresso de um módulo (0 a 100)
-   * @param {number} moduleId
-   * @param {Array} moduleLessons - array de aulas do módulo
-   */
   const getModuleProgress = useCallback(
     (moduleId, moduleLessons) => {
       if (!moduleLessons || moduleLessons.length === 0) return 0;
       const completed = moduleLessons.filter(
-        (l) => !!progress.completedLessons[l.id]
+        (l) => !!(progress?.completedLessons && progress.completedLessons[l.id])
       ).length;
       return Math.round((completed / moduleLessons.length) * 100);
     },
-    [progress.completedLessons]
+    [progress?.completedLessons]
   );
 
-  /**
-   * Retorna o total de aulas concluídas globalmente
-   */
   const getTotalCompleted = useCallback(() => {
-    return Object.keys(progress.completedLessons).length;
-  }, [progress.completedLessons]);
+    return Object.keys(progress?.completedLessons || {}).length;
+  }, [progress?.completedLessons]);
 
   /**
    * Retorna os dados de "Continue Assistindo"

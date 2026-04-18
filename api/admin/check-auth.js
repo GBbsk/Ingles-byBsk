@@ -4,11 +4,7 @@
 
 import { authenticateAdmin } from '../../server/shared/auth.js';
 import { corsMiddleware, runMiddleware } from '../../server/shared/cors.js';
-// C:\Users\gabri\Downloads\plat-curso\Ingles-byBsk\server\controllers\lessonController.js
-// C:\Users\gabri\Downloads\plat-curso\Ingles-byBsk\server\index.js
-// C:\Users\gabri\Downloads\plat-curso\Ingles-byBsk\server\shared\dataStore.js
-// C:\Users\gabri\Downloads\plat-curso\Ingles-byBsk\server\shared\auth.js
-// C:\Users\gabri\Downloads\plat-curso\Ingles-byBsk\server\shared\cors.js
+
 export default async function handler(req, res) {
   await runMiddleware(req, res, corsMiddleware);
 
