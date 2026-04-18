@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react ';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import styled, { keyframes, css } from 'styled-components';
 import { FaCheckCircle, FaPlayCircle, FaChevronLeft, FaChevronRight, FaCheck } from 'react-icons/fa';

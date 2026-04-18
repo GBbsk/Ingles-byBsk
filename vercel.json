@@ -6,7 +6,7 @@
   },
   "rewrites": [
     {
-      "source": "/((?!api/|api$).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
