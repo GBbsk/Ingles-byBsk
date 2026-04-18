@@ -541,6 +541,23 @@ function LessonDetail() {
   const lessonCompleted = isLessonCompleted(lesson.id);
   const moduleProgress = getModuleProgress(module.id, module.lessons);
 
+  const handleToggleCompletion = () => {
+    toggleLessonCompleted(lesson.id, module.id);
+    
+    // Se a aula estiver sendo MARCADA como concluída, buscar a próxima
+    if (!lessonCompleted) {
+      const currentIndex = module.lessons.findIndex(l => l.id === lesson.id);
+      if (currentIndex >= 0 && currentIndex < module.lessons.length - 1) {
+        const nextLesson = module.lessons[currentIndex + 1];
+        
+        // Timeout para que haja tempo de rodar a animação verde agradável de progresso
+        setTimeout(() => {
+          navigate(`/modulos/${module.id}/aula/${nextLesson.id}`);
+        }, 350);
+      }
+    }
+  };
+
   return (
     <PageWrapper>
       <ModuleReturnButton variant="outline" onClick={() => navigate(`/modulos/${module.id}`)}>
@@ -583,7 +600,7 @@ function LessonDetail() {
           <CompleteButtonWrapper>
             <MarkCompleteButton
               $completed={lessonCompleted}
-              onClick={() => toggleLessonCompleted(lesson.id, module.id)}
+              onClick={handleToggleCompletion}
             >
               {lessonCompleted ? <FaCheck /> : <FaCheckCircle />}
               {lessonCompleted ? 'Aula Concluída' : 'Marcar Aula como Concluída'}
