@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react ';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { FaCheckCircle, FaPlayCircle, FaChevronLeft, FaChevronRight, FaCheck } from 'react-icons/fa';
 import Button from '../components/ui/Button';
 import FileList from '../components/ui/FileList';
@@ -225,7 +225,7 @@ const MarkCompleteButton = styled.button`
 
   svg {
     font-size: 1.1rem;
-    ${({ $completed }) => $completed && `animation: ${checkmarkPop} 0.4s ease-out;`}
+    ${({ $completed }) => $completed && css`animation: ${checkmarkPop} 0.4s ease-out;`}
   }
 
   @media (max-width: 576px) {
