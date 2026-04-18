@@ -472,7 +472,14 @@ function LessonDetail() {
         if (!response.ok) {
           throw new Error(`Erro ao buscar módulo: ${response.status}`);
         }
-        const foundModule = await response.json();
+        
+        const contentType = response.headers.get("content-type");
+        let foundModule = null;
+        if (contentType && contentType.includes("application/json")) {
+          foundModule = await response.json();
+        } else {
+          throw new Error("A API não retornou um formato JSON válido.");
+        }
 
         if (foundModule) {
           const enrichedModule = {

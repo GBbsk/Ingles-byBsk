@@ -125,14 +125,20 @@ function Modules() {
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status}`);
         }
-        const data = await response.json();
-        // Sanitizar os dados
-        const sanitizedModules = data.map((module) => ({
-          ...module,
-          lessons: Array.isArray(module.lessons) ? module.lessons : [],
-        }));
-        const sortedModules = [...sanitizedModules].sort((a, b) => a.order - b.order);
-        setModules(sortedModules);
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          // Sanitizar os dados
+          const sanitizedModules = data.map((module) => ({
+            ...module,
+            lessons: Array.isArray(module.lessons) ? module.lessons : [],
+          }));
+          const sortedModules = [...sanitizedModules].sort((a, b) => a.order - b.order);
+          setModules(sortedModules);
+        } else {
+          throw new Error("A API não retornou um formato JSON válido.");
+        }
         setLoading(false);
       } catch (error) {
         console.error('Erro ao carregar os módulos (Modules):', error);

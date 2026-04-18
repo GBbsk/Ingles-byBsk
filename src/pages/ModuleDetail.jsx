@@ -226,13 +226,21 @@ function ModuleDetail() {
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status}`);
         }
-        const data = await response.json();
+        
+        const contentType = response.headers.get("content-type");
+        let data = null;
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          throw new Error("A API não retornou um formato JSON válido.");
+        }
 
         if (data) {
           data.lessons = [...(data.lessons || [])].sort((a, b) => a.order - b.order);
           setModule(data);
+        } else {
+          setModule(null);
         }
-
         setLoading(false);
       } catch (error) {
         console.error('Erro ao carregar o módulo:', error);

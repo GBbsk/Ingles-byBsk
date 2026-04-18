@@ -400,8 +400,14 @@ function Home() {
         if (!response.ok) {
           throw new Error(`Erro na requisição: ${response.status}`);
         }
-        const data = await response.json();
-        setModules(Array.isArray(data) ? data : []);
+        
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const data = await response.json();
+          setModules(Array.isArray(data) ? data : []);
+        } else {
+          throw new Error("A API não retornou um formato JSON válido.");
+        }
       } catch (error) {
         console.error('Erro ao carregar módulos:', error);
         setModules([]);
