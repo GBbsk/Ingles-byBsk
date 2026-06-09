@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # Configuração para o ecossistema npm (Node.js)
+  - package-ecosystem: "npm"
+    directory: "/"          # Onde está o package.json (raiz do projeto)
+    schedule:
+      interval: "weekly"    # Frequência para buscar atualizações ordinárias (daily, weekly, ou monthly)
+    open-pull-requests-limit: 5 # Limite de PRs abertos ao mesmo tempo para não lotar seu repo
