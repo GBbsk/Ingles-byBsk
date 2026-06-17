@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { usePlaylist } from '../../context/PlaylistContext';
-import { FaTimes, FaPlay, FaTrash, FaChevronDown, FaChevronUp, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaTimes, FaPlay, FaTrash, FaChevronDown, FaChevronUp, FaArrowUp, FaArrowDown, FaMusic } from 'react-icons/fa';
 
 const Overlay = styled.div`
   position: fixed;
@@ -19,21 +19,25 @@ const Overlay = styled.div`
 const SidebarContainer = styled.div`
   position: fixed;
   top: 0;
-  right: ${({ $isOpen }) => ($isOpen ? '0' : '-350px')};
-  width: 350px;
+  right: ${({ $isOpen }) => ($isOpen ? '0' : '-380px')};
+  width: 380px;
   height: 100vh;
-  background-color: ${({ theme }) => theme.cardBg || '#fff'};
-  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-  transition: right 0.3s ease;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.1)'};
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: ${({ theme }) => theme.glassGlow || '-8px 0 32px rgba(0,0,0,0.1)'};
+  border-left: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255,255,255,0.1)'};
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 2000;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
   color: ${({ theme }) => theme.text || '#333'};
 
-  @media (max-width: 400px) {
+  @media (max-width: 450px) {
     width: 100%;
     right: ${({ $isOpen }) => ($isOpen ? '0' : '-100%')};
+    border-left: none;
   }
 `;
 
@@ -41,50 +45,88 @@ const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: ${({ theme }) => theme.accentGradient || theme.primary};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 `;
 
 const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 1.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   cursor: pointer;
   color: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+  }
 `;
 
 const CreateRow = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 `;
 
 const Input = styled.input`
-  flex: 1;
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid ${({ theme }) => theme.borderColor || '#ccc'};
-  background-color: ${({ theme }) => theme.body || '#f7f8fc'};
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.borderColor || 'rgba(255,255,255,0.1)'};
+  background: rgba(0, 0, 0, 0.1);
   color: ${({ theme }) => theme.text || '#333'};
+  font-size: 0.95rem;
+  transition: all 0.2s;
+
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.primary || '#6366f1'};
+    background: rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 0 3px ${({ theme }) => (theme.primary || '#6366f1') + '33'};
   }
 `;
 
 const CreateButton = styled.button`
-  padding: 0.5rem 1rem;
+  width: 100%;
+  padding: 0.75rem;
   cursor: pointer;
   background: ${({ theme }) => theme.button?.primaryBg || theme.primary || '#6366f1'};
   color: ${({ theme }) => theme.button?.primaryText || '#fff'};
   border: none;
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+
   &:hover {
-    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+    opacity: 0.95;
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -92,19 +134,40 @@ const PlaylistsContainer = styled.div`
   flex: 1;
   overflow-y: auto;
   margin-top: 0.5rem;
+  padding-right: 0.5rem;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
 `;
 
 const PlaylistWrapper = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor || '#eee'};
+  margin-bottom: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  transition: all 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
 `;
 
 const PlaylistItem = styled.div`
-  padding: 0.75rem 0.5rem;
+  padding: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  &:hover { background-color: ${({ theme }) => theme.primaryLight || 'rgba(0,0,0,0.02)'}; }
 `;
 
 const PlaylistInfo = styled.div`
@@ -116,59 +179,68 @@ const PlaylistInfo = styled.div`
 
 const PlaylistName = styled.strong`
   color: ${({ theme }) => theme.text || '#333'};
-  font-size: 0.95rem;
+  font-size: 1rem;
+  font-weight: 700;
 `;
 
 const TrackCount = styled.span`
   font-size: 0.75rem;
-  color: ${({ theme }) => theme.secondaryText || '#666'};
-  background-color: ${({ theme }) => theme.borderColor || '#eee'};
-  padding: 0.1rem 0.4rem;
-  border-radius: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: ${({ theme }) => theme.accentGradient || '#6366f1'};
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  min-width: 24px;
+  text-align: center;
 `;
 
 const Actions = styled.div`
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
 `;
 
 const IconButton = styled.button`
   cursor: pointer;
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem;
-  border-radius: 4px;
+  padding: 0.5rem;
+  border-radius: 10px;
   color: ${({ $color, theme }) => {
     if ($color === 'primary') return theme.primary || '#007bff';
     if ($color === 'error') return theme.error || '#ff4444';
     return theme.secondaryText || '#666';
   }};
+  transition: all 0.2s;
 
   &:hover {
-    background-color: ${({ theme }) => theme.primaryLight || 'rgba(0,0,0,0.05)'};
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
   }
-  &:disabled { opacity: 0.3; cursor: not-allowed; }
+  &:disabled { opacity: 0.2; cursor: not-allowed; transform: none; }
 `;
 
 const TracksList = styled.div`
-  background-color: ${({ theme }) => theme.body || '#f9f9f9'};
-  padding-left: 1rem;
+  background: rgba(0, 0, 0, 0.1);
   max-height: ${({ $expanded }) => ($expanded ? '1000px' : '0')};
   overflow: hidden;
-  transition: max-height 0.3s ease-in-out;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const TrackItem = styled.div`
-  padding: 0.6rem 0.5rem;
+  padding: 0.75rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor || '#eee'};
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   &:last-child { border-bottom: none; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
 `;
 
 const TrackTitle = styled.div`
@@ -177,11 +249,38 @@ const TrackTitle = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   margin-right: 0.5rem;
+  color: ${({ theme }) => theme.text || '#333'};
+  opacity: 0.9;
 `;
 
 const TrackActions = styled.div`
   display: flex;
-  gap: 0.2rem;
+  gap: 0.35rem;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: ${({ theme }) => theme.secondaryText || '#888'};
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-style: italic;
+
+  svg {
+    opacity: 0.3;
+    font-size: 2rem;
+  }
+`;
+
+const TrackEmpty = styled.div`
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.secondaryText || '#888'};
+  font-style: italic;
+  text-align: center;
 `;
 
 const PlaylistSidebar = ({ isOpen, onClose }) => {
@@ -232,14 +331,15 @@ const PlaylistSidebar = ({ isOpen, onClose }) => {
             placeholder="Nome da playlist..."
             aria-label="New playlist name"
           />
-          <CreateButton onClick={handleCreate}>Criar</CreateButton>
+          <CreateButton onClick={handleCreate}>Criar Playlist</CreateButton>
         </CreateRow>
 
         <PlaylistsContainer>
           {Object.values(playlists).length === 0 ? (
-            <div style={{ textAlign: 'center', marginTop: '2rem', color: '#888' }}>
+            <EmptyState>
+              <FaMusic />
               Nenhuma playlist criada.
-            </div>
+            </EmptyState>
           ) : (
             Object.values(playlists).map(p => (
               <PlaylistWrapper key={p.id}>
@@ -298,9 +398,9 @@ const PlaylistSidebar = ({ isOpen, onClose }) => {
                     </TrackItem>
                   ))}
                   {p.tracks.length === 0 && (
-                    <div style={{ padding: '0.5rem', fontSize: '0.75rem', color: '#888', fontStyle: 'italic' }}>
+                    <TrackEmpty>
                       Playlist vazia.
-                    </div>
+                    </TrackEmpty>
                   )}
                 </TracksList>
               </PlaylistWrapper>

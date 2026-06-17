@@ -1,91 +1,138 @@
 import { useState, useRef, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaStepBackward, FaStepForward, FaPlus } from 'react-icons/fa';
+import styled, { keyframes } from 'styled-components';
+
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaStepBackward, FaStepForward, FaPlus, FaList } from 'react-icons/fa';
 import Button from '../ui/Button';
 import { usePlaylist } from '../../context/PlaylistContext';
 
 const AudioPlayerContainer = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Idealmente, a sombra também viria do tema */
-  margin-bottom: 2rem;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.05)'};
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.1)'};
+  margin-bottom: 2.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.primary}33;
+    box-shadow: ${({ theme }) => theme.glassGlow || '0 12px 48px rgba(0, 0, 0, 0.15)'};
+  }
 
   @media (max-width: 576px) {
-    padding: 1rem 0.5rem;
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
   }
 `;
 
 const TranscriptContainer = styled.div`
-  background: ${({ theme }) => theme.cardBg};
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  margin-top: 1rem;
-  box-shadow: 0 2px 8px rgba(80, 112, 255, 0.07);
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
   color: ${({ theme }) => theme.text};
-  font-size: 1rem;
-  line-height: 1.6;
-  max-height: 260px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-height: 300px;
   overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
 `;
 
 const AudioTitle = styled.h3`
   margin: 0 0 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text};
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: ${({ theme }) => theme.accentGradient || theme.primary};
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 `;
 
 const AudioDescription = styled.p`
   color: ${({ theme }) => theme.secondaryText};
-  font-size: 0.9rem;
-  margin: 0 0 1.5rem;
+  font-size: 0.95rem;
+  margin: 0 0 2rem;
+  opacity: 0.8;
+  line-height: 1.5;
 `;
 
 const PlayerControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 
   @media (max-width: 576px) {
-    flex-direction: row;
     justify-content: center;
-    gap: 0.3rem;
-    margin-bottom: 0.7rem;
+    gap: 0.5rem;
   }
 `;
 
 const ControlButton = styled.button`
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   color: ${({ theme }) => theme.primary};
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   cursor: pointer;
-  padding: 0.3rem;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
 
   &:hover {
-    background: ${({ theme }) => theme.primaryLight};
+    background: ${({ theme }) => theme.primary}22;
+    border-color: ${({ theme }) => theme.primary}44;
+    transform: scale(1.1);
+    color: ${({ theme }) => theme.primaryDark || theme.primary};
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
   }
 
   @media (max-width: 576px) {
-    font-size: 1.2rem;
-    padding: 0.2rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
   }
 `;
 
 const VolumeSlider = styled.input`
-  width: 70px;
-  margin: 0 0.3rem;
+  width: 80px;
+  margin: 0 0.5rem;
+  cursor: pointer;
+  accent-color: ${({ theme }) => theme.primary};
 
   @media (max-width: 576px) {
-    width: 50px;
+    width: 60px;
   }
 `;
 
@@ -99,45 +146,51 @@ const ProgressContainer = styled.div`
 
 const ProgressBar = styled.div`
   width: 100%;
-  height: 6px;
-  background-color: ${({ theme }) => theme.borderColor};
-  border-radius: 3px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   position: relative;
   cursor: pointer;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
 
   @media (max-width: 576px) {
-    height: 5px;
-    margin-bottom: 0.3rem;
+    height: 6px;
   }
 `;
 
 const TimeDisplay = styled.div`
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
   color: ${({ theme }) => theme.secondaryText};
-
-  @media (max-width: 576px) {
-    font-size: 0.7rem;
-  }
+  font-variant-numeric: tabular-nums;
 `;
 
-// Use $progress as a transient prop
 const Progress = styled.div`
   height: 100%;
-  background-color: ${({ theme }) => theme.primary};
-  border-radius: 3px;
+  background: ${({ theme }) => theme.accentGradient || theme.primary};
+  border-radius: 10px;
   width: ${({ $progress }) => (isNaN($progress) ? 0 : $progress)}%;
   transition: width 0.1s linear;
+  box-shadow: 0 0 10px ${({ theme }) => (theme.primary || '#6366f1') + '44'};
 `;
 
-// Use $active as a transient prop
 const TranscriptText = styled.span`
   color: ${({ $active, theme }) => $active ? theme.primary : theme.text};
-  font-weight: ${({ $active }) => $active ? '600' : '400'};
-  transition: color 0.3s ease, font-weight 0.3s ease;
+  background: ${({ $active }) => $active ? 'rgba(99, 102, 241, 0.1)' : 'transparent'};
+  padding: ${({ $active }) => $active ? '0.2rem 0.4rem' : '0'};
+  border-radius: 4px;
+  font-weight: ${({ $active }) => $active ? '700' : '400'};
+  transition: all 0.3s ease;
   cursor: pointer;
+  display: inline-block;
+
+  &:hover {
+    color: ${({ theme }) => theme.primary};
+    background: rgba(99, 102, 241, 0.05);
+  }
 `;
 
 const AddMenuContainer = styled.div`
@@ -146,49 +199,57 @@ const AddMenuContainer = styled.div`
   margin-left: auto;
 
   @media (max-width: 576px) {
-    margin-left: 0;
+    margin-left: 0.5rem;
   }
 `;
 
 const AddMenuDropdown = styled.div`
   position: absolute;
-  bottom: 100%;
+  bottom: 120%;
   right: 0;
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.borderColor};
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
-  min-width: 150px;
-  z-index: 10;
-  margin-bottom: 0.5rem;
+  background: ${({ theme }) => theme.glassBg || 'rgba(30, 30, 45, 0.95)'};
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  border-radius: 16px;
+  box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.3)'};
+  padding: 0.75rem;
+  min-width: 200px;
+  z-index: 100;
+  animation: ${fadeInUp} 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   @media (max-width: 576px) {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    right: -20px;
   }
 `;
 
 const AddMenuItem = styled.button`
   width: 100%;
   text-align: left;
-  background: none;
+  background: transparent;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   color: ${({ theme }) => theme.text};
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  border-radius: 10px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 
   &:hover {
-    background-color: ${({ theme }) => theme.borderColor};
+    background: rgba(255, 255, 255, 0.08);
+    color: ${({ theme }) => theme.primary};
+    transform: translateX(4px);
   }
 
   &:disabled {
     cursor: default;
-    opacity: 0.5;
-    background: none;
+    opacity: 0.4;
+    background: transparent;
+    transform: none;
   }
 `;
 
@@ -365,6 +426,7 @@ const AudioPlayer = ({ title, description, audioUrl, transcript, audioId, lesson
               ) : (
                 Object.values(playlists).map(playlist => (
                   <AddMenuItem key={playlist.id} onClick={() => handleAddTrack(playlist.id)}>
+                    <FaList size="0.8rem" />
                     {playlist.name}
                   </AddMenuItem>
                 ))
