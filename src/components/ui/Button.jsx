@@ -40,17 +40,16 @@ const ButtonStyles = styled.button`
     css`
       background: ${theme.button.primaryBg};
       color: ${theme.button.primaryText};
-      box-shadow: ${theme.shadowMd};
+      box-shadow: 0 4px 15px ${({ theme }) => theme.primary}44;
 
       &:hover {
-        box-shadow: ${theme.shadowLg};
-        transform: translateY(-1px);
-        filter: brightness(1.08);
+        box-shadow: 0 6px 20px ${({ theme }) => theme.primary}66;
+        transform: translateY(-2px);
+        filter: brightness(1.1);
       }
 
       &:active {
         transform: translateY(0);
-        box-shadow: ${theme.shadowSm};
       }
     `}
 
@@ -58,17 +57,17 @@ const ButtonStyles = styled.button`
   ${({ $variant, theme }) =>
     $variant === 'outline' &&
     css`
-      background: transparent;
+      background: ${theme.glassBg || 'transparent'};
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: ${theme.button.outlineText};
-      border: 1.5px solid ${theme.button.outlineBorder};
+      border: 1px solid ${theme.glassBorder || theme.button.outlineBorder};
 
       &:hover {
-        background: ${theme.button.outlineHoverBg};
-        transform: translateY(-1px);
-      }
-
-      &:active {
-        transform: translateY(0);
+        background: ${theme.primaryLight};
+        border-color: ${theme.primary};
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px ${({ theme }) => theme.primary}22;
       }
     `}
 
@@ -83,7 +82,7 @@ const ButtonStyles = styled.button`
 
       &:hover {
         color: ${theme.primaryDark};
-        text-decoration: underline;
+        background: ${theme.primaryLight};
       }
     `}
 

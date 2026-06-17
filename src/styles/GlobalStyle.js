@@ -1,8 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
   *,
   *::before,
   *::after {
@@ -21,41 +19,46 @@ export const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
                  'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
-    transition: background-color 0.4s ease, color 0.4s ease;
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    min-height: 100vh;
   }
 
   a {
     color: ${({ theme }) => theme.primary};
     text-decoration: none;
-    transition: color 0.2s ease-in-out;
+    transition: all 0.3s ease;
   }
 
   a:hover {
     color: ${({ theme }) => theme.primaryDark};
+    filter: drop-shadow(0 0 8px ${({ theme }) => theme.primary}66);
   }
 
   h1, h2, h3, h4, h5, h6 {
     color: ${({ theme }) => theme.text};
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
-  h1 { font-size: 2.25rem; font-weight: 700; letter-spacing: -0.025em; }
-  h2 { font-size: 1.75rem; font-weight: 600; }
-  h3 { font-size: 1.375rem; }
+  h1 { font-size: 2.5rem; letter-spacing: -0.04em; }
+  h2 { font-size: 1.85rem; letter-spacing: -0.03em; }
+  h3 { font-size: 1.45rem; }
 
   p {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    color: ${({ theme }) => theme.secondaryText};
   }
 
   button {
     cursor: pointer;
     font-family: inherit;
+    border: none;
+    outline: none;
   }
 
   /* ---- Selection ---- */
@@ -66,21 +69,19 @@ export const GlobalStyle = createGlobalStyle`
 
   /* ---- Custom Scrollbar ---- */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
   }
   ::-webkit-scrollbar-track {
     background: ${({ theme }) => theme.body};
   }
   ::-webkit-scrollbar-thumb {
     background: ${({ theme }) => theme.borderColor};
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: content-box;
+    border-radius: 10px;
+    border: 3px solid ${({ theme }) => theme.body};
   }
   ::-webkit-scrollbar-thumb:hover {
     background: ${({ theme }) => theme.primary};
-    background-clip: content-box;
   }
 
   /* ---- Focus Ring ---- */

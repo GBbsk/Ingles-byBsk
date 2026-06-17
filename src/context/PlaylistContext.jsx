@@ -81,6 +81,36 @@ export const PlaylistProvider = ({ children }) => {
     });
   };
 
+  const reorderTracks = (playlistId, startIndex, endIndex) => {
+    setPlaylists(prev => {
+      const playlist = prev[playlistId];
+      if (!playlist) return prev;
+      
+      const newTracks = Array.from(playlist.tracks);
+      const [removed] = newTracks.splice(startIndex, 1);
+      newTracks.splice(endIndex, 0, removed);
+
+      // Update current track index if necessary
+      if (playlistId === currentPlaylistId) {
+        if (currentTrackIndex === startIndex) {
+          setCurrentTrackIndex(endIndex);
+        } else if (startIndex < currentTrackIndex && endIndex >= currentTrackIndex) {
+          setCurrentTrackIndex(prevIdx => prevIdx - 1);
+        } else if (startIndex > currentTrackIndex && endIndex <= currentTrackIndex) {
+          setCurrentTrackIndex(prevIdx => prevIdx + 1);
+        }
+      }
+
+      return {
+        ...prev,
+        [playlistId]: {
+          ...playlist,
+          tracks: newTracks
+        }
+      };
+    });
+  };
+
   const deletePlaylist = (playlistId) => {
     setPlaylists(prev => {
       const newPlaylists = { ...prev };
@@ -129,6 +159,7 @@ export const PlaylistProvider = ({ children }) => {
       createPlaylist,
       addTrack,
       removeTrack,
+      reorderTracks,
       deletePlaylist,
       currentPlaylistId,
       currentTrackIndex,

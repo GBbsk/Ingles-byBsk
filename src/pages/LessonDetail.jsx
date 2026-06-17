@@ -628,7 +628,14 @@ function LessonDetail() {
                   <AudioCard key={audio.id}>
                     <AudioTitle>{audio.title}</AudioTitle>
                     {audio.description && <AudioDescription>{audio.description}</AudioDescription>}
-                    <AudioPlayer title={audio.title} description={audio.description} audioUrl={audio.fileUrl} transcript={audio.transcript} />
+                    <AudioPlayer 
+                      title={audio.title} 
+                      description={audio.description} 
+                      audioUrl={audio.fileUrl} 
+                      transcript={audio.transcript} 
+                      audioId={audio.id}
+                      lessonTitle={lesson.title}
+                    />
                   </AudioCard>
                 ))}
               </AudioListWrapper>

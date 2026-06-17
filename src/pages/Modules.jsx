@@ -9,107 +9,119 @@ const fadeInUp = keyframes`
 `;
 
 const PageHeader = styled.div`
-  margin-bottom: 2rem;
-  padding: 0 1rem;
-  animation: ${fadeInUp} 0.5s ease-out;
+  margin-bottom: 3.5rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.05)'};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.2)'};
+  animation: ${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, ${({ theme }) => theme.primary}11 0%, transparent 70%);
+    z-index: 0;
+  }
 
   @media (max-width: 576px) {
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
+    padding: 2rem 1.25rem;
   }
 `;
 
+const HeaderContent = styled.div`
+  position: relative;
+  z-index: 1;
+`;
+
 const PageTitle = styled.h1`
-  font-size: 2.2rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
   color: ${({ theme }) => theme.text};
-  transition: font-size 0.3s ease;
+  letter-spacing: -0.04em;
+  
+  span {
+    background: ${({ theme }) => theme.accentGradient};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
   @media (max-width: 768px) {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
   @media (max-width: 576px) {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
   }
 `;
 
 const PageDescription = styled.p`
   color: ${({ theme }) => theme.secondaryText};
-  font-size: 1.1rem;
-  max-width: 750px;
+  font-size: 1.15rem;
+  max-width: 650px;
+  margin: 0 auto 2rem;
   line-height: 1.6;
-  transition: font-size 0.3s ease;
 
   @media (max-width: 768px) {
-    max-width: 100%;
     font-size: 1rem;
-  }
-  @media (max-width: 576px) {
-    font-size: 0.95rem;
   }
 `;
 
 const ModulesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  padding: 0 1rem;
-  animation: ${fadeInUp} 0.6s ease-out;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding-bottom: 3rem;
+  animation: ${fadeInUp} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
 
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 1.5rem;
-  }
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.25rem;
-  }
   @media (max-width: 576px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 0 0.5rem;
-  }
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 300px;
-  font-size: 1.1rem;
-  color: ${({ theme }) => theme.secondaryText};
-  transition: min-height 0.3s ease;
-  
-  @media (max-width: 768px) {
-    min-height: 250px;
-    font-size: 1rem;
-  }
-  
-  @media (max-width: 576px) {
-    min-height: 200px;
+    gap: 1.5rem;
   }
 `;
 
 const ProgressSummary = styled.div`
-  padding: 0 1rem;
-  margin-bottom: 1.5rem;
   display: flex;
-  gap: 1rem;
+  justify-content: center;
+  gap: 1.25rem;
   flex-wrap: wrap;
-  animation: ${fadeInUp} 0.55s ease-out;
+  margin-top: 1rem;
 `;
 
 const SummaryPill = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 20px;
-  padding: 0.4rem 1rem;
-  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
   color: ${({ theme }) => theme.secondaryText};
-  font-weight: 500;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: ${({ theme }) => theme.primary}44;
+    transform: translateY(-2px);
+  }
 
   strong {
     color: ${({ theme }) => theme.primary};
+    font-size: 1.1rem;
   }
 `;
 
@@ -164,26 +176,27 @@ function Modules() {
   return (
     <div className="modules-container">
       <PageHeader>
-        <PageTitle>Módulos do Curso</PageTitle>
-        <PageDescription>
-          Explore todos os módulos disponíveis no nosso curso de inglês.
-          Cada módulo contém aulas em vídeo, arquivos para download e áudios com transcrição.
-        </PageDescription>
-      </PageHeader>
+        <HeaderContent>
+          <PageTitle>Nossos <span>Módulos</span></PageTitle>
+          <PageDescription>
+            Domine o inglês com uma jornada estruturada. Explore aulas em vídeo, materiais de apoio e áudios interativos em cada etapa.
+          </PageDescription>
 
-      {totalCompleted > 0 && !loading && (
-        <ProgressSummary>
-          <SummaryPill>
-            <strong>{totalCompleted}</strong> aulas concluídas
-          </SummaryPill>
-          <SummaryPill>
-            <strong>{modulesFinished}/{modules.length}</strong> módulos finalizados
-          </SummaryPill>
-          <SummaryPill>
-            Progresso geral: <strong>{totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0}%</strong>
-          </SummaryPill>
-        </ProgressSummary>
-      )}
+          {totalCompleted > 0 && !loading && (
+            <ProgressSummary>
+              <SummaryPill>
+                <strong>{totalCompleted}</strong> aulas concluídas
+              </SummaryPill>
+              <SummaryPill>
+                <strong>{modulesFinished}/{modules.length}</strong> módulos finalizados
+              </SummaryPill>
+              <SummaryPill>
+                Sucesso: <strong>{totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0}%</strong>
+              </SummaryPill>
+            </ProgressSummary>
+          )}
+        </HeaderContent>
+      </PageHeader>
 
       {loading ? (
         <LoadingContainer>Carregando módulos...</LoadingContainer>

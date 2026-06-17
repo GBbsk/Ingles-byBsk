@@ -9,7 +9,7 @@ import MainLayout from './layouts/MainLayout';
 import AdminLayout from './layouts/AdminLayout';
 
 // Components
-import Header from './components/Header/Header';
+import Header from './components/layout/Header';
 
 // Pages (Public)
 import Home from './pages/Home';

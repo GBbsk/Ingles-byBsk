@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
-import { FaCheckCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaPlayCircle } from 'react-icons/fa';
 import Button from '../components/ui/Button';
 import { useUserProgress } from '../hooks/useUserProgress';
 
@@ -11,77 +11,99 @@ const fadeInUp = keyframes`
 `;
 
 const ModuleContainer = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 2rem;
-  animation: ${fadeInUp} 0.5s ease-out;
-  
-  @media (max-width: 576px) {
-    padding: 1.25rem;
-    border-radius: 8px;
-  }
+  margin-bottom: 3rem;
+  animation: ${fadeInUp} 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 `;
 
 const ModuleHeader = styled.div`
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.05)'};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  padding: 2.5rem;
   display: flex;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.2)'};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, ${({ theme }) => theme.primary}11 0%, transparent 70%);
+    z-index: 0;
+  }
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+    text-align: center;
+    gap: 2rem;
+    padding: 2rem;
   }
 `;
 
 const ModuleImage = styled.div`
-  width: 200px;
-  height: 150px;
-  border-radius: 8px;
+  width: 280px;
+  height: 200px;
+  border-radius: 16px;
   background-image: url(${({ image }) => image});
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
   
-  @media (max-width: 768px) {
+  @media (max-width: 992px) {
     width: 100%;
-    height: 180px;
+    max-width: 400px;
   }
 `;
 
 const ModuleInfo = styled.div`
   flex: 1;
+  z-index: 1;
 `;
 
 const ModuleTitle = styled.h1`
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
   color: ${({ theme }) => theme.text};
+  letter-spacing: -0.04em;
   
   @media (max-width: 576px) {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
 `;
 
 const ModuleDescription = styled.p`
   color: ${({ theme }) => theme.secondaryText};
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 `;
 
 const ModuleProgressWrapper = styled.div`
-  margin-top: 0.5rem;
+  margin-top: 1.5rem;
+  max-width: 400px;
+
+  @media (max-width: 992px) {
+    margin: 1.5rem auto 0;
+  }
 
   .module-prog-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: ${({ theme }) => theme.secondaryText};
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.75rem;
     display: flex;
     justify-content: space-between;
+    font-weight: 600;
 
     strong {
       color: ${({ theme }) => theme.primary};
@@ -90,126 +112,183 @@ const ModuleProgressWrapper = styled.div`
 
   .module-prog-bar {
     height: 8px;
-    background-color: ${({ theme }) => theme.borderColor};
+    background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
     overflow: hidden;
 
     div {
       height: 100%;
       background: ${({ $progress, theme }) =>
-    $progress >= 100
-      ? theme.success
-      : `linear-gradient(90deg, ${theme.primary}, #e50914)`};
+        $progress >= 100
+          ? theme.success
+          : theme.neonGradient || theme.primary};
       border-radius: 4px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px ${({ theme, $progress }) => 
+        $progress >= 100 ? theme.success : theme.primary}44;
     }
   }
 `;
 
-const LessonsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+const LessonsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  animation: ${fadeInUp} 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.2s both;
+
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const LessonCard = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme, $completed }) => $completed ? theme.success + '33' : theme.cardBorder};
-  border-radius: 8px;
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.03)'};
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid ${({ theme, $completed }) => 
+    $completed ? theme.success + '44' : theme.glassBorder || 'rgba(255, 255, 255, 0.05)'};
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
   
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-    border-color: ${({ theme }) => theme.primary};
+    transform: translateY(-8px) scale(1.02);
+    border-color: ${({ theme, $completed }) => $completed ? theme.success : theme.primary};
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 15px ${({ theme }) => theme.primary}22;
+
+    .play-overlay {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    
+    img {
+      transform: scale(1.1);
+    }
   }
-  
-  @media (max-width: 576px) {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1.25rem;
-    gap: 1rem;
+`;
+
+const LessonThumbnail = styled.div`
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: ${({ theme }) => theme.primary};
+    color: white;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+    box-shadow: 0 0 20px ${({ theme }) => theme.primary};
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
   }
 `;
 
 const LessonNumber = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: ${({ theme, $completed }) => $completed ? theme.success : theme.primary};
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  flex-shrink: 0;
-  transition: background-color 0.3s;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 2;
 `;
 
-const LessonInfo = styled.div`
+const LessonContent = styled.div`
+  padding: 1.5rem;
   flex: 1;
 `;
 
 const LessonTitle = styled.h3`
   font-size: 1.2rem;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
   color: ${({ theme }) => theme.text};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const CompletedTag = styled.span`
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: ${({ theme }) => theme.success};
-  background-color: ${({ theme }) => theme.success + '15'};
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-`;
-
-const LessonDescription = styled.p`
-  color: ${({ theme }) => theme.secondaryText};
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  line-height: 1.4;
 `;
 
 const LessonMeta = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: ${({ theme }) => theme.secondaryText};
+  font-weight: 600;
   
-  @media (max-width: 576px) {
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
   }
 `;
 
-const LessonDuration = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+const StatusBadge = styled.div`
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: ${({ theme, $completed }) => $completed ? theme.success : 'rgba(255,255,255,0.1)'};
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 2;
 `;
 
 const BackButton = styled(Button)`
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
 `;
 
 const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 300px;
-  font-size: 1.1rem;
-  color: ${({ theme }) => theme.secondaryText};
+  min-height: 400px;
+  font-size: 1.2rem;
+  color: ${({ theme }) => theme.primary};
+  font-weight: 600;
 `;
 
 function ModuleDetail() {
@@ -256,7 +335,7 @@ function ModuleDetail() {
   };
 
   if (loading) {
-    return <LoadingContainer>Carregando módulo...</LoadingContainer>;
+    return <LoadingContainer>Sincronizando conteúdos...</LoadingContainer>;
   }
 
   if (!module) {
@@ -276,12 +355,12 @@ function ModuleDetail() {
   const moduleProgress = getModuleProgress(module.id, module.lessons || []);
 
   return (
-    <div>
+    <div style={{ paddingBottom: '4rem' }}>
       <BackButton
         variant="outline"
         onClick={() => navigate('/modulos')}
       >
-        ← Voltar para Módulos
+        ← Todos os Módulos
       </BackButton>
 
       <ModuleContainer>
@@ -290,10 +369,9 @@ function ModuleDetail() {
           <ModuleInfo>
             <ModuleTitle>{module.title}</ModuleTitle>
             <ModuleDescription>{module.description}</ModuleDescription>
-            <div>{module.lessons.length} aulas</div>
             <ModuleProgressWrapper $progress={moduleProgress}>
               <div className="module-prog-label">
-                <span>Progresso do Módulo</span>
+                <span>Progresso da Jornada</span>
                 <strong>{moduleProgress}%</strong>
               </div>
               <div className="module-prog-bar">
@@ -303,40 +381,45 @@ function ModuleDetail() {
           </ModuleInfo>
         </ModuleHeader>
 
-        <LessonsList>
+        <LessonsGrid>
           {module.lessons.map((lesson, index) => {
             const completed = isLessonCompleted(lesson.id);
+            // Fallback thumbnail if not available
+            const thumbUrl = lesson.thumbnail || `https://img.youtube.com/vi/${lesson.videoUrl?.split('/').pop()?.split('?')[0]}/maxresdefault.jpg`;
+            
             return (
               <LessonCard
                 key={lesson.id}
                 onClick={() => handleLessonClick(lesson.id)}
                 $completed={completed}
               >
-                <LessonNumber $completed={completed}>
-                  {completed ? <FaCheckCircle /> : index + 1}
-                </LessonNumber>
-                <LessonInfo>
-                  <LessonTitle>
-                    {lesson.title}
-                    {completed && <CompletedTag>Concluída</CompletedTag>}
-                  </LessonTitle>
-                  <LessonDescription>{lesson.description}</LessonDescription>
+                <LessonThumbnail>
+                  <LessonNumber>{index + 1}</LessonNumber>
+                  <StatusBadge $completed={completed}>
+                    {completed ? 'Concluída' : 'Pendente'}
+                  </StatusBadge>
+                  <img src={thumbUrl} alt={lesson.title} />
+                  <div className="play-overlay">
+                    <FaPlayCircle />
+                  </div>
+                </LessonThumbnail>
+                
+                <LessonContent>
+                  <LessonTitle>{lesson.title}</LessonTitle>
                   <LessonMeta>
-                    <LessonDuration>
-                      <span>⏱️</span> {lesson.duration || '—'}
-                    </LessonDuration>
-                    {lesson.files && lesson.files.length > 0 && (
-                      <span>📄 {lesson.files.length} arquivos</span>
+                    <span>⏱ {lesson.duration || '15 min'}</span>
+                    {lesson.audios?.length > 0 && (
+                      <span>🔊 {lesson.audios.length}</span>
                     )}
-                    {lesson.audios && lesson.audios.length > 0 && (
-                      <span>🔊 {lesson.audios.length} áudios</span>
+                    {lesson.files?.length > 0 && (
+                      <span>📄 {lesson.files.length}</span>
                     )}
                   </LessonMeta>
-                </LessonInfo>
+                </LessonContent>
               </LessonCard>
             );
           })}
-        </LessonsList>
+        </LessonsGrid>
       </ModuleContainer>
     </div>
   );

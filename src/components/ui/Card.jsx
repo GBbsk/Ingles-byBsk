@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from 'react-icons/fa';
 
 const CardContainer = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 14px;
+  background: ${({ theme }) => theme.glassBg || theme.cardBg};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid ${({ theme }) => theme.glassBorder || theme.cardBorder};
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: ${({ theme }) => theme.shadowMd};
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: ${({ theme }) => theme.glassGlow || theme.shadowMd};
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   height: 100%;
   display: flex;
@@ -16,23 +18,33 @@ const CardContainer = styled.div`
   position: relative;
 
   &:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: ${({ theme }) => theme.shadowXl};
-    border-color: ${({ theme }) => theme.primary}33;
+    transform: translateY(-8px) scale(1.02);
+    border-color: ${({ theme }) => theme.glassBorderNeon || theme.primary};
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3), 0 0 20px ${({ theme }) => theme.primary}22;
+    
+    .card-image-bg {
+      transform: scale(1.08);
+    }
   }
 
   @media (max-width: 576px) {
-    margin-bottom: 1rem;
-    border-radius: 10px;
+    border-radius: 12px;
   }
 `;
 
 const CardImage = styled.div`
   height: 180px;
-  background-image: url(${({ image }) => image});
-  background-size: cover;
-  background-position: center;
   position: relative;
+  overflow: hidden;
+  
+  .card-image-bg {
+    width: 100%;
+    height: 100%;
+    background-image: url(${({ image }) => image});
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
   
   &::after {
     content: '';
@@ -40,8 +52,9 @@ const CardImage = styled.div`
     bottom: 0;
     left: 0;
     right: 0;
-    height: 50%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    height: 60%;
+    background: linear-gradient(to top, rgba(15, 15, 26, 0.8), transparent);
+    z-index: 1;
   }
   
   @media (max-width: 576px) {
@@ -54,6 +67,7 @@ const CardContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
+  z-index: 2;
   
   @media (max-width: 576px) {
     padding: 1.25rem;
@@ -64,7 +78,8 @@ const CardTitle = styled.h3`
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 700;
-  color: ${({ theme }) => theme.primaryDark};
+  color: ${({ theme }) => theme.text};
+  letter-spacing: -0.02em;
 
   @media (max-width: 576px) {
     font-size: 1.1rem;
@@ -74,8 +89,9 @@ const CardTitle = styled.h3`
 const CardDescription = styled.p`
   color: ${({ theme }) => theme.secondaryText};
   font-size: 0.9rem;
-  margin: 0 0 1rem;
+  margin: 0 0 1.25rem;
   flex: 1;
+  line-height: 1.5;
 `;
 
 const CardFooter = styled.div`
@@ -86,23 +102,24 @@ const CardFooter = styled.div`
 `;
 
 const CardBadge = styled.span`
-  background-color: ${({ theme }) => theme.primary};
-  color: ${({ theme }) => theme.button.primaryText};
-  font-size: 0.8rem;
-  padding: 0.3rem 0.7rem;
+  background: ${({ theme }) => theme.primaryLight || theme.primary};
+  color: ${({ theme }) => theme.primary};
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
   border-radius: 6px;
   font-weight: 600;
+  border: 1px solid ${({ theme }) => theme.primary}33;
 `;
 
-// --- Progress Bar Netflix Style ---
+// --- Progress Bar Cyber Glass Style ---
 const ProgressBarTrack = styled.div`
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 4px;
-  background-color: ${({ theme }) => theme.borderColor};
-  z-index: 2;
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 5;
 `;
 
 const progressFillAnimation = keyframes`
@@ -115,10 +132,11 @@ const ProgressBarFill = styled.div`
   background: ${({ $progress, theme }) => 
     $progress >= 100 
       ? theme.success 
-      : theme.accentGradient};
-  border-radius: 0 2px 2px 0;
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: ${progressFillAnimation} 0.8s ease-out;
+      : theme.neonGradient || theme.primary};
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: ${progressFillAnimation} 1s ease-out;
+  box-shadow: 0 0 10px ${({ theme, $progress }) => 
+    $progress >= 100 ? theme.success : theme.primary}66;
 `;
 
 const CompletedBadge = styled.div`
@@ -128,20 +146,21 @@ const CompletedBadge = styled.div`
   background: ${({ theme }) => theme.success};
   color: white;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  z-index: 3;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10;
+  border: 2px solid ${({ theme }) => theme.body};
 `;
 
 const ProgressLabel = styled.span`
   font-size: 0.75rem;
   color: ${({ theme }) => theme.secondaryText};
-  font-weight: 500;
+  font-weight: 600;
 `;
 
 const Card = ({ 
@@ -175,7 +194,11 @@ const Card = ({
           <FaCheckCircle />
         </CompletedBadge>
       )}
-      {image && <CardImage image={image} />}
+      {image && (
+        <CardImage image={image}>
+          <div className="card-image-bg" />
+        </CardImage>
+      )}
       <CardContent>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -184,7 +207,7 @@ const Card = ({
             {badge && <CardBadge>{badge}</CardBadge>}
             {hasProgress && (
               <ProgressLabel>
-                {isComplete ? '✔ Concluído' : `${progress}%`}
+                {isComplete ? '✔ Concluído' : `${Math.round(progress)}%`}
               </ProgressLabel>
             )}
           </CardFooter>
