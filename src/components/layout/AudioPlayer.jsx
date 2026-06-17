@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaStepBackward, FaStepForward } from 'react-icons/fa';
+import { FaPlay, FaPause, FaVolumeUp, FaVolumeDown, FaStepBackward, FaStepForward, FaPlus } from 'react-icons/fa';
 import Button from '../ui/Button';
+import { usePlaylist } from '../../context/PlaylistContext';
 
 const AudioPlayerContainer = styled.div`
   background-color: ${({ theme }) => theme.cardBg};
@@ -139,8 +140,61 @@ const TranscriptText = styled.span`
   cursor: pointer;
 `;
 
+const AddMenuContainer = styled.div`
+  position: relative;
+  display: inline-flex;
+  margin-left: auto;
 
-const AudioPlayer = ({ title, description, audioUrl, transcript }) => {
+  @media (max-width: 576px) {
+    margin-left: 0;
+  }
+`;
+
+const AddMenuDropdown = styled.div`
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background-color: ${({ theme }) => theme.cardBg};
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  min-width: 150px;
+  z-index: 10;
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 576px) {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+`;
+
+const AddMenuItem = styled.button`
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: ${({ theme }) => theme.text};
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.borderColor};
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+    background: none;
+  }
+`;
+
+const AudioPlayer = ({ title, description, audioUrl, transcript, audioId, lessonTitle }) => {
+  const { playlists, addTrack } = usePlaylist();
+  const [showAddMenu, setShowAddMenu] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -202,6 +256,17 @@ const AudioPlayer = ({ title, description, audioUrl, transcript }) => {
       audioRef.current.volume = volume;
     }
   }, [volume]);
+
+  const handleAddTrack = (playlistId) => {
+    const trackData = { 
+      audioId: audioId || `audio-${Date.now()}`, 
+      title: title || 'Unknown Title', 
+      fileUrl: audioUrl, 
+      lessonTitle: lessonTitle || title || 'Unknown Lesson' 
+    };
+    addTrack(playlistId, trackData);
+    setShowAddMenu(false);
+  };
 
   const formatTime = (time) => {
     if (isNaN(time)) return '00:00';
@@ -284,6 +349,29 @@ const AudioPlayer = ({ title, description, audioUrl, transcript }) => {
           onChange={handleVolumeChange}
         />
         <FaVolumeUp style={{ marginLeft: '0.2rem' }} />
+
+        <AddMenuContainer>
+          <ControlButton 
+            onClick={() => setShowAddMenu(!showAddMenu)} 
+            title="Adicionar à Playlist"
+            style={{ fontSize: '1.2rem' }}
+          >
+            <FaPlus />
+          </ControlButton>
+          {showAddMenu && playlists && (
+            <AddMenuDropdown>
+              {Object.values(playlists).length === 0 ? (
+                <AddMenuItem disabled>Nenhuma playlist</AddMenuItem>
+              ) : (
+                Object.values(playlists).map(playlist => (
+                  <AddMenuItem key={playlist.id} onClick={() => handleAddTrack(playlist.id)}>
+                    {playlist.name}
+                  </AddMenuItem>
+                ))
+              )}
+            </AddMenuDropdown>
+          )}
+        </AddMenuContainer>
       </PlayerControls>
 
       <ProgressContainer>
