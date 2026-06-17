@@ -19,79 +19,113 @@ const pulseGlow = keyframes`
 
 // --- Styled Components ---
 const HeroSection = styled.section`
-  background: linear-gradient(135deg, ${({ theme }) => theme.primary} 0%, ${({ theme }) => theme.primaryDark} 100%);
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.05)'};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.2)'};
   color: white;
   padding: 4rem 2rem;
-  border-radius: 18px;
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
   text-align: center;
-  animation: ${fadeInUp} 0.6s ease-out;
+  animation: ${fadeInUp} 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, ${({ theme }) => theme.primary}11 0%, transparent 70%);
+    z-index: 0;
+  }
 
   @media (max-width: 768px) {
     padding: 3rem 1.5rem;
-    margin-bottom: 2rem;
-    border-radius: 12px;
+    margin-bottom: 2.5rem;
+    border-radius: 18px;
   }
 
   @media (max-width: 576px) {
-    padding: 2rem 0.7rem;
-    border-radius: 8px;
+    padding: 2rem 1.25rem;
+    border-radius: 12px;
   }
 `;
 
+const HeroContent = styled.div`
+  position: relative;
+  z-index: 1;
+`;
+
 const HeroTitle = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.04em;
+  color: ${({ theme }) => theme.text};
   
+  span {
+    background: ${({ theme }) => theme.accentGradient};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   @media (max-width: 768px) {
-    font-size: 2rem;
+    font-size: 2.4rem;
   }
   
   @media (max-width: 576px) {
-    font-size: 1.8rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.9rem;
+    margin-bottom: 1rem;
   }
 `;
 
 const HeroSubtitle = styled.p`
   font-size: 1.2rem;
   max-width: 700px;
-  margin: 0 auto 2rem;
-  opacity: 0.9;
+  margin: 0 auto 2.5rem;
+  color: ${({ theme }) => theme.secondaryText};
+  line-height: 1.6;
   
   @media (max-width: 768px) {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
   }
   
   @media (max-width: 576px) {
-    font-size: 0.95rem;
-    margin-bottom: 1.25rem;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
   }
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
   color: ${({ theme }) => theme.text};
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
+  letter-spacing: -0.02em;
   
   svg {
     color: ${({ theme }) => theme.primary};
+    font-size: 1.5rem;
   }
   
   @media (max-width: 768px) {
-    font-size: 1.6rem;
-    margin-bottom: 1.25rem;
+    font-size: 1.7rem;
+    margin-bottom: 1.5rem;
   }
   
   @media (max-width: 576px) {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
   }
 `;
 
@@ -99,60 +133,63 @@ const ModulesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 3.5rem;
   
   @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 1.5rem;
   }
   
   @media (max-width: 576px) {
     grid-template-columns: 1fr;
     gap: 1.25rem;
-    margin-bottom: 1.5rem;
   }
 `;
 
 // --- Continue Watching Section ---
 const ContinueWatchingCard = styled.div`
-  background: linear-gradient(135deg, ${({ theme }) => theme.cardBg} 0%, ${({ theme }) => theme.primaryLight} 100%);
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 16px;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.03)'};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  border-radius: 20px;
   padding: 1.5rem 2rem;
-  margin-bottom: 3rem;
+  margin-bottom: 3.5rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
   cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  animation: ${fadeInUp} 0.5s ease-out, ${pulseGlow} 3s ease-in-out infinite;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: ${fadeInUp} 0.5s ease-out;
 
   &:hover {
-    transform: translateY(-3px) scale(1.01);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: ${({ theme }) => theme.primary}44;
+    box-shadow: ${({ theme }) => theme.glassGlow || '0 8px 32px rgba(0, 0, 0, 0.2)'};
   }
 
   @media (max-width: 768px) {
     flex-direction: column;
     text-align: center;
-    padding: 1.25rem;
-    gap: 1rem;
+    padding: 1.5rem;
+    gap: 1.25rem;
+    border-radius: 16px;
   }
 `;
 
 const ContinuePlayIcon = styled.div`
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #e50914, #b20710);
+  background: ${({ theme }) => theme.accentGradient};
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.5rem;
   flex-shrink: 0;
-  box-shadow: 0 4px 15px rgba(229, 9, 20, 0.35);
-  transition: transform 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
 
   ${ContinueWatchingCard}:hover & {
     transform: scale(1.1);
@@ -163,16 +200,18 @@ const ContinueInfo = styled.div`
   flex: 1;
 
   h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 700;
     color: ${({ theme }) => theme.text};
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.35rem;
+    letter-spacing: -0.01em;
   }
 
   p {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: ${({ theme }) => theme.secondaryText};
     margin: 0;
+    opacity: 0.8;
   }
 `;
 
@@ -189,197 +228,70 @@ const StatsRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   animation: ${fadeInUp} 0.65s ease-out;
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   @media (max-width: 576px) {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 1rem;
   }
 `;
 
 const StatCard = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 12px;
-  padding: 1.25rem 1.5rem;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.03)'};
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.08)'};
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  transition: transform 0.2s;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
 
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: ${({ theme }) => theme.primary}33;
   }
 `;
 
 const StatIcon = styled.div`
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
   background: ${({ $color }) => $color || 'linear-gradient(135deg, #667eea, #764ba2)'};
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 `;
 
 const StatContent = styled.div`
   h4 {
-    font-size: 1.4rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: ${({ theme }) => theme.text};
     margin: 0;
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
   p {
-    font-size: 0.8rem;
-    color: ${({ theme }) => theme.secondaryText};
-    margin: 0;
-  }
-`;
-
-// --- Features Section (maintained from original) ---
-const FeaturesSection = styled.section`
-  margin: 4rem 0;
-  animation: ${fadeInUp} 0.7s ease-out;
-  
-  @media (max-width: 768px) {
-    margin: 3rem 0;
-  }
-  
-  @media (max-width: 576px) {
-    margin: 2.5rem 0;
-  }
-`;
-
-const FeaturesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  
-  @media (max-width: 992px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-  
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-`;
-
-const FeatureCard = styled.div`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 12px;
-  padding: 2rem;
-  text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  }
-  
-  @media (max-width: 768px) {
-    padding: 1.75rem;
-  }
-  
-  @media (max-width: 576px) {
-    padding: 1.5rem;
-  }
-`;
-
-const FeatureIcon = styled.div`
-  font-size: 2.5rem;
-  color: ${({ theme }) => theme.primary};
-  margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    font-size: 2.25rem;
-    margin-bottom: 0.75rem;
-  }
-`;
-
-const FeatureTitle = styled.h3`
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: ${({ theme }) => theme.text};
-  
-  @media (max-width: 576px) {
-    font-size: 1.1rem;
-  }
-`;
-
-const FeatureDescription = styled.p`
-  color: ${({ theme }) => theme.secondaryText};
-  font-size: 0.9rem;
-  
-  @media (max-width: 576px) {
     font-size: 0.85rem;
-  }
-`;
-
-const CTASection = styled.section`
-  background-color: ${({ theme }) => theme.cardBg};
-  border: 1px solid ${({ theme }) => theme.cardBorder};
-  border-radius: 12px;
-  padding: 3rem 2rem;
-  text-align: center;
-  margin: 4rem 0;
-  
-  @media (max-width: 768px) {
-    padding: 2.5rem 1.5rem;
-    margin: 3rem 0;
-    border-radius: 10px;
-  }
-  
-  @media (max-width: 576px) {
-    padding: 2rem 1rem;
-    margin: 2.5rem 0;
-    border-radius: 8px;
-  }
-`;
-
-const CTATitle = styled.h2`
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: ${({ theme }) => theme.text};
-  
-  @media (max-width: 768px) {
-    font-size: 1.6rem;
-  }
-  
-  @media (max-width: 576px) {
-    font-size: 1.4rem;
-    margin-bottom: 0.75rem;
-  }
-`;
-
-const CTADescription = styled.p`
-  color: ${({ theme }) => theme.secondaryText};
-  font-size: 1rem;
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  
-  @media (max-width: 768px) {
-    font-size: 0.95rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  @media (max-width: 576px) {
-    font-size: 0.9rem;
-    margin-bottom: 1.25rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.secondaryText};
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
   }
 `;
 
@@ -444,17 +356,19 @@ function Home() {
   return (
     <div style={{ padding: '0 1rem' }}>
       <HeroSection>
-        <HeroTitle>Aprenda Inglês de Forma Eficiente</HeroTitle>
-        <HeroSubtitle>
-          Nossa plataforma oferece um método comprovado para você dominar o inglês
-          com aulas interativas, áudios e materiais exclusivos.
-        </HeroSubtitle>
-        <Button
-          size="large"
-          onClick={() => navigate('/modulos')}
-        >
-          Começar Agora
-        </Button>
+        <HeroContent>
+          <HeroTitle>Aprenda Inglês de <span>Forma Eficiente</span></HeroTitle>
+          <HeroSubtitle>
+            Nossa plataforma oferece um método comprovado para você dominar o inglês
+            com aulas interativas, áudios e materiais exclusivos.
+          </HeroSubtitle>
+          <Button
+            size="large"
+            onClick={() => navigate('/modulos')}
+          >
+            Começar Agora
+          </Button>
+        </HeroContent>
       </HeroSection>
 
       {/* Continue Assistindo */}
@@ -547,50 +461,6 @@ function Home() {
           </Button>
         </div>
       </section>
-
-      <FeaturesSection>
-        <SectionTitle>Por que escolher nossa plataforma?</SectionTitle>
-
-        <FeaturesGrid>
-          <FeatureCard>
-            <FeatureIcon>🎓</FeatureIcon>
-            <FeatureTitle>Conteúdo Exclusivo</FeatureTitle>
-            <FeatureDescription>
-              Aulas preparadas por professores experientes com foco na fluência e comunicação.
-            </FeatureDescription>
-          </FeatureCard>
-
-          <FeatureCard>
-            <FeatureIcon>🔊</FeatureIcon>
-            <FeatureTitle>Áudios com Transcrição</FeatureTitle>
-            <FeatureDescription>
-              Pratique a compreensão auditiva com nossos áudios exclusivos e acompanhe a transcrição em tempo real.
-            </FeatureDescription>
-          </FeatureCard>
-
-          <FeatureCard>
-            <FeatureIcon>📱</FeatureIcon>
-            <FeatureTitle>Acesso em Qualquer Dispositivo</FeatureTitle>
-            <FeatureDescription>
-              Estude quando e onde quiser através do seu computador, tablet ou smartphone.
-            </FeatureDescription>
-          </FeatureCard>
-        </FeaturesGrid>
-      </FeaturesSection>
-
-      <CTASection>
-        <CTATitle>Pronto para dominar o inglês?</CTATitle>
-        <CTADescription>
-          Comece agora mesmo a estudar com nossa metodologia exclusiva e
-          alcance a fluência que você sempre desejou.
-        </CTADescription>
-        <Button
-          size="large"
-          onClick={() => navigate('/modulos')}
-        >
-          Acessar Módulos
-        </Button>
-      </CTASection>
     </div>
   );
 }

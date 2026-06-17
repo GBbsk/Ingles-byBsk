@@ -125,6 +125,18 @@ const SummaryPill = styled.div`
   }
 `;
 
+const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${({ theme }) => theme.secondaryText};
+  font-size: 1.2rem;
+  background: ${({ theme }) => theme.glassBg || 'rgba(255, 255, 255, 0.05)'};
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid ${({ theme }) => theme.glassBorder || 'rgba(255, 255, 255, 0.1)'};
+  margin-top: 2rem;
+`;
+
 function Modules() {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
