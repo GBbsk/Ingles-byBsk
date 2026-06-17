@@ -1,6 +1,7 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaGraduationCap, FaHeart } from 'react-icons/fa';
+import GlobalAudioPlayer from '../components/layout/GlobalAudioPlayer';
 
 const HEADER_HEIGHT = '60px'; 
 
@@ -144,6 +145,7 @@ function MainLayout() {
           </Copyright>
         </FooterContent>
       </FooterStyled>
+      <GlobalAudioPlayer />
     </LayoutContainer>
   );
 }
