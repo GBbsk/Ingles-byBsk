@@ -1,7 +1,9 @@
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
-import { FaGraduationCap, FaHome, FaLayerGroup, FaSignInAlt } from 'react-icons/fa';
+import { FaGraduationCap, FaHome, FaLayerGroup, FaSignInAlt, FaList } from 'react-icons/fa';
 import ThemeToggleButton from './ThemeToggleButton';
+import PlaylistSidebar from './PlaylistSidebar';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -109,9 +111,29 @@ const RightSection = styled.div`
   gap: 0.5rem;
 `;
 
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.text};
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+
+  &:hover {
+    background: ${({ theme }) => theme.primaryLight || 'rgba(0,0,0,0.05)'};
+    color: ${({ theme }) => theme.primary};
+  }
+`;
+
 const Header = ({ toggleTheme, currentTheme }) => {
   const location = useLocation();
   const path = location.pathname;
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <HeaderContainer>
@@ -133,8 +155,13 @@ const Header = ({ toggleTheme, currentTheme }) => {
       </Nav>
 
       <RightSection>
+        <IconButton onClick={() => setIsSidebarOpen(true)} aria-label="Open Playlists">
+          <FaList />
+        </IconButton>
         <ThemeToggleButton toggleTheme={toggleTheme} currentTheme={currentTheme} />
       </RightSection>
+
+      <PlaylistSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
     </HeaderContainer>
   );
 };
