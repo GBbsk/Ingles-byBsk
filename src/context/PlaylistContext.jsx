@@ -5,22 +5,20 @@ const PlaylistContext = createContext();
 export const usePlaylist = () => useContext(PlaylistContext);
 
 export const PlaylistProvider = ({ children }) => {
-  const [playlists, setPlaylists] = useState({});
-  const [currentPlaylistId, setCurrentPlaylistId] = useState(null);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Load from local storage on mount
-  useEffect(() => {
+  const [playlists, setPlaylists] = useState(() => {
     const saved = localStorage.getItem('inglesbsk_playlists');
     if (saved) {
       try {
-        setPlaylists(JSON.parse(saved));
+        return JSON.parse(saved);
       } catch (e) {
         console.error('Error parsing playlists from local storage', e);
       }
     }
-  }, []);
+    return {};
+  });
+  const [currentPlaylistId, setCurrentPlaylistId] = useState(null);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Save to local storage whenever playlists change
   useEffect(() => {
@@ -51,15 +49,32 @@ export const PlaylistProvider = ({ children }) => {
   };
 
   const removeTrack = (playlistId, trackIndex) => {
+    const playlist = playlists[playlistId];
+    if (!playlist) return;
+    
+    if (playlistId === currentPlaylistId) {
+      if (trackIndex < currentTrackIndex) {
+        setCurrentTrackIndex(prevIdx => prevIdx - 1);
+      } else if (trackIndex === currentTrackIndex) {
+        if (playlist.tracks.length <= 1) {
+          setIsPlaying(false);
+          setCurrentTrackIndex(0);
+        } else if (currentTrackIndex >= playlist.tracks.length - 1) {
+          setCurrentTrackIndex(playlist.tracks.length - 2);
+          setIsPlaying(false);
+        }
+      }
+    }
+
     setPlaylists(prev => {
-      const playlist = prev[playlistId];
-      if (!playlist) return prev;
-      const newTracks = [...playlist.tracks];
+      const p = prev[playlistId];
+      if (!p) return prev;
+      const newTracks = [...p.tracks];
       newTracks.splice(trackIndex, 1);
       return {
         ...prev,
         [playlistId]: {
-          ...playlist,
+          ...p,
           tracks: newTracks
         }
       };
@@ -104,7 +119,7 @@ export const PlaylistProvider = ({ children }) => {
     }
   };
 
-  const currentTrack = currentPlaylistId && playlists[currentPlaylistId] 
+  const currentTrack = currentPlaylistId && playlists[currentPlaylistId] && currentTrackIndex < playlists[currentPlaylistId].tracks.length
     ? playlists[currentPlaylistId].tracks[currentTrackIndex] 
     : null;
 
