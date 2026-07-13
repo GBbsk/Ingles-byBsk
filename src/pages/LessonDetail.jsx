@@ -105,7 +105,7 @@ const AudioListWrapper = styled.div`
 `;
 
 const AudioCard = styled.div`
-  background: ${({ theme }) => theme.audioCard?.backgroundGradient || 'linear-gradient(120deg, #e0e7ff 0%, #f0fdfa 100%)'};
+  background: ${({ theme }) => theme.cardBg};
   border-radius: 14px;
   padding: 1.1rem 1.3rem;
   box-shadow: ${({ theme }) => theme.audioCard?.boxShadow || '0 4px 16px rgba(80, 112, 255, 0.08)'};
